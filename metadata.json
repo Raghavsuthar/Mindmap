@@ -1,0 +1,6 @@
+{
+  "name": "NeuroMap",
+  "description": "Interactive psychiatric neurocircuit and psychopharmacology reference tool for clinicians and trainees",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
