@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>NeuroMap 3D Brain</title>
+<style>
+  html,body{margin:0;height:100%;background:#0B0F17;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
+  #hud{position:fixed;left:10px;bottom:10px;color:#94A3B8;font-size:11px;line-height:1.5;pointer-events:none;
+       background:rgba(17,24,39,.72);border:1px solid #334155;border-radius:8px;padding:8px 10px;max-width:62vw}
+  #hud b{color:#F8FAFC}
+  #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:#FCA5A5;
+       background:#0B0F17;text-align:center;padding:24px;font-size:14px}
+  #tip{position:fixed;top:10px;left:50%;transform:translateX(-50%);color:#BAE6FD;background:rgba(12,45,72,.85);
+       border:1px solid #0284C7;border-radius:20px;padding:5px 12px;font-size:11px;pointer-events:none;white-space:nowrap}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js",
+"three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="app"></div>
+<div id="tip">Drag to rotate &bull; Pinch / scroll to zoom &bull; Tap a node</div>
+<div id="hud">Loading 3D brain&hellip;</div>
+<div id="err"></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const errBox = document.getElementById('err');
+const hud = document.getElementById('hud');
+function fail(msg){ errBox.style.display='flex'; errBox.textContent = msg; }
+
+const container = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0B0F17);
+scene.fog = new THREE.Fog(0x0B0F17, 9, 18);
+
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.1, 100);
+const CAM_HOME = new THREE.Vector3(0.4, 0.9, 5.2);
+camera.position.copy(CAM_HOME);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.minDistance = 2.2; controls.maxDistance = 10;
+controls.enablePan = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3,4,5); scene.add(key);
+const rim = new THREE.DirectionalLight(0x38BDF8, 0.7); rim.position.set(-4,-2,-4); scene.add(rim);
+const fill = new THREE.PointLight(0xA855F7, 12, 20); fill.position.set(0,2,3); scene.add(fill);
+
+// ---- Translucent brain shell (see-through) ----
+const brainGroup = new THREE.Group(); scene.add(brainGroup);
+let shellMat, wireMat;
+function buildShell(){
+  const geo = new THREE.SphereGeometry(1.0, 48, 32);
+  const pos = geo.attributes.position;
+  // deform sphere into brain-like ellipsoid with slight frontal fullness
+  for(let i=0;i<pos.count;i++){
+    let x=pos.getX(i)*1.22, y=pos.getY(i)*1.5, z=pos.getZ(i)*1.7;
+    y += Math.sin(z*1.4)*0.06;           // gentle longitudinal curve
+    x *= (1 + 0.08*Math.cos(y*1.2));     // temporal fullness
+    pos.setXYZ(i,x,y,z);
+  }
+  geo.computeVertexNormals();
+  shellMat = new THREE.MeshPhysicalMaterial({ color:0x3B82A6, transparent:true, opacity:0.13,
+    roughness:0.35, metalness:0.05, clearcoat:0.6, side:THREE.DoubleSide, depthWrite:false });
+  const shell = new THREE.Mesh(geo, shellMat); brainGroup.add(shell);
+  wireMat = new THREE.MeshBasicMaterial({ color:0x38BDF8, wireframe:true, transparent:true, opacity:0.07 });
+  brainGroup.add(new THREE.Mesh(geo.clone(), wireMat));
+  // midline fissure hint
+  const fiss = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.006, 8, 120, Math.PI),
+    new THREE.MeshBasicMaterial({color:0x64748B, transparent:true, opacity:0.5}));
+  fiss.rotation.set(0, Math.PI/2, Math.PI/2); fiss.position.y = 0.1; fiss.scale.set(1,1.18,1);
+  brainGroup.add(fiss);
+}
+buildShell();
+
+// ---- Data ----
+let REGIONS=[], CIRCUITS=[], byId={};
+const nodeMeshes={}, labelSprites={};
+const circuitGroup = new THREE.Group(); scene.add(circuitGroup);
+let circuitTubes={};   // circuitId -> {mesh, curve, pulses[]}
+let activeCircuitId=null, xray=false;
+
+const SYSTEM_COLOR = { prefrontal:0x38BDF8, cingulate:0x22D3EE, paralimbic:0x2DD4BF,
+  basal_ganglia:0xA855F7, limbic:0xF59E0B, diencephalon:0xFB7185, midbrain:0xF472B6, brainstem:0x94A3B8, cortex:0x38BDF8 };
+
+function makeLabel(text, color){
+  const c=document.createElement('canvas'); c.width=256; c.height=96;
+  const g=c.getContext('2d');
+  g.fillStyle='rgba(11,15,23,0.85)'; g.strokeStyle=color; g.lineWidth=4;
+  g.beginPath(); g.roundRect(6,14,244,68,14); g.fill(); g.stroke();
+  g.fillStyle='#F8FAFC'; g.font='bold 44px monospace'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(text,128,50);
+  const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  sp.scale.set(0.62,0.23,1); return sp;
+}
+
+function initBrain(payload){
+  REGIONS = payload.regions || []; CIRCUITS = payload.circuits || [];
+  byId = {}; Object.values(nodeMeshes).forEach(m=>scene.remove(m));
+  for(const k in labelSprites) scene.remove(labelSprites[k]);
+  for(const k in nodeMeshes) delete nodeMeshes[k];
+  for(const k in labelSprites) delete labelSprites[k];
+
+  for(const r of REGIONS){
+    byId[r.id]=r;
+    const col = SYSTEM_COLOR[r.system] ?? 0x38BDF8;
+    const isHub = (r.circuits||[]).length>=3;
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(isHub?0.105:0.082, 24, 18),
+      new THREE.MeshStandardMaterial({color:col, emissive:col, emissiveIntensity:0.45, roughness:0.3}));
+    mesh.position.set(r.pos[0], r.pos[1], r.pos[2]);
+    mesh.userData.regionId = r.id;
+    scene.add(mesh); nodeMeshes[r.id]=mesh;
+    // halo
+    const halo = new THREE.Mesh(new THREE.SphereGeometry(isHub?0.16:0.13, 18, 14),
+      new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.18, depthWrite:false}));
+    halo.position.copy(mesh.position); scene.add(halo); mesh.userData.halo=halo;
+    const label = makeLabel(r.abbr, '#'+new THREE.Color(col).getHexString());
+    label.position.set(r.pos[0], r.pos[1]+0.22, r.pos[2]);
+    scene.add(label); labelSprites[r.id]=label;
+  }
+  buildCircuits();
+  hud.innerHTML = `<b>${REGIONS.length} regions &bull; ${CIRCUITS.length} circuits</b><br>Tap any glowing node for one-touch detail. Toggle circuits above.`;
+}
+
+function buildCircuits(){
+  while(circuitGroup.children.length) circuitGroup.remove(circuitGroup.children[0]);
+  circuitTubes={};
+  for(const c of CIRCUITS){
+    const pts = (c.nodes||[]).map(id=>byId[id]).filter(Boolean)
+      .map(r=>new THREE.Vector3(r.pos[0], r.pos[1], r.pos[2]));
+    if(pts.length<2) continue;
+    // lift midpoints slightly outward so tubes sit visible inside shell
+    const curve = new THREE.CatmullRomCurve3(pts, true, 'centripetal', 0.6);
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 64, 0.022, 8, true),
+      new THREE.MeshStandardMaterial({color:new THREE.Color(c.color), emissive:new THREE.Color(c.color),
+        emissiveIntensity:0.55, transparent:true, opacity:0.85, roughness:0.4}));
+    tube.userData.circuitId=c.id;
+    circuitGroup.add(tube);
+    // travelling pulse packets (neural signal)
+    const pulses=[];
+    for(let i=0;i<2;i++){
+      const p=new THREE.Mesh(new THREE.SphereGeometry(0.05,12,10),
+        new THREE.MeshBasicMaterial({color:0xffffff}));
+      circuitGroup.add(p); pulses.push({mesh:p, t:i/2});
+    }
+    circuitTubes[c.id]={mesh:tube, curve, pulses};
+  }
+  applyActiveCircuit();
+}
+
+function applyActiveCircuit(){
+  for(const [id, t] of Object.entries(circuitTubes)){
+    const isActive = !activeCircuitId || id===activeCircuitId;
+    t.mesh.visible = isActive;
+    t.pulses.forEach(p=>p.mesh.visible = isActive && (!activeCircuitId || id===activeCircuitId));
+    t.mesh.material.opacity = (!activeCircuitId) ? 0.28 : (id===activeCircuitId ? 0.95 : 0.0);
+  }
+  for(const [id, m] of Object.entries(nodeMeshes)){
+    const inCircuit = !activeCircuitId || (byId[id].circuits||[]).includes(activeCircuitId);
+    m.material.emissiveIntensity = (!activeCircuitId || inCircuit) ? (id===highlighted?1.4:0.55) : 0.08;
+    m.scale.setScalar(id===highlighted?1.45: (inCircuit?1.15:0.8));
+    if(labelSprites[id]) labelSprites[id].material.opacity = inCircuit?1:0.25;
+  }
+  const c = CIRCUITS.find(x=>x.id===activeCircuitId);
+  if(c) hud.innerHTML = `<b>${c.name}</b> <span style="color:${c.color}">${c.tierCode||''}</span><br>${c.function||''}<br>Tap a node for receptors, syndromes & drugs.`;
+}
+
+// ---- Tap picking (one-touch) ----
+const ray = new THREE.Raycaster(); const ptr = new THREE.Vector2();
+let downX=0, downY=0, downT=0, highlighted=null;
+renderer.domElement.addEventListener('pointerdown', e=>{ downX=e.clientX; downY=e.clientY; downT=performance.now(); });
+renderer.domElement.addEventListener('pointerup', e=>{
+  const moved = Math.hypot(e.clientX-downX, e.clientY-downY);
+  if(moved>8 || performance.now()-downT>600) return;   // was a drag, not a tap
+  ptr.x=(e.clientX/window.innerWidth)*2-1; ptr.y=-(e.clientY/window.innerHeight)*2+1;
+  ray.setFromCamera(ptr, camera);
+  const hits = ray.intersectObjects(Object.values(nodeMeshes), false);
+  if(hits.length){
+    const id = hits[0].object.userData.regionId;
+    highlighted=id; applyActiveCircuit();
+    const r = byId[id];
+    hud.innerHTML = `<b>${r.name}</b> (${r.abbr})<br>${r.role||''}`;
+    if(window.Android && window.Android.onRegionTap) window.Android.onRegionTap(id);
+  }
+});
+
+// ---- JS API called from Kotlin ----
+window.initBrain = initBrain;
+window.setActiveCircuit = id => { activeCircuitId = (id && id!=='null') ? id : null; applyActiveCircuit(); };
+window.setXray = on => { xray=!!on; if(shellMat) shellMat.opacity = xray?0.04:0.13; if(wireMat) wireMat.opacity=xray?0.03:0.07; };
+window.resetCamera = () => { camera.position.copy(CAM_HOME); controls.target.set(0,0,0); };
+window.focusRegion = id => { const r=byId[id]; if(!r) return;
+  highlighted=id; applyActiveCircuit();
+  controls.target.set(r.pos[0], r.pos[1], r.pos[2]); };
+window.setLayerFilter = () => applyActiveCircuit();
+
+// ---- Loop ----
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  for(const [id, ct] of Object.entries(circuitTubes)){
+    if(!ct.mesh.visible) continue;
+    ct.pulses.forEach((p,i)=>{
+      const u = (t*0.18 + p.t + i*0.0) % 1;
+      p.mesh.position.copy(ct.curve.getPointAt(u));
+      const s = 0.8 + 0.4*Math.sin(t*6 + i*3);
+      p.mesh.scale.setScalar(s);
+    });
+  }
+  // gentle label billboard + halo breathing
+  for(const [id,m] of Object.entries(nodeMeshes)){
+    if(m.userData.halo) m.userData.halo.scale.setScalar(1+0.12*Math.sin(t*2.4));
+  }
+  controls.update(); renderer.render(scene,camera);
+}
+animate();
+window.addEventListener('resize', ()=>{
+  camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+// Fallback demo data if Kotlin hasn't injected yet (offline preview)
+setTimeout(()=>{ if(REGIONS.length===0 && window.__PENDING__) initBrain(window.__PENDING__); }, 1500);
+</script>
+</body>
+</html>

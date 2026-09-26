@@ -39,6 +39,7 @@ import com.example.data.NeuroMapRepository
 import com.example.data.model.BrainRegion
 import com.example.data.model.Circuit
 import com.example.data.model.EntityLayer
+import com.example.ui.components.Brain3DView
 import com.example.ui.components.LayerBadge
 import com.example.ui.components.getLayerColor
 import com.example.ui.theme.*
@@ -54,6 +55,8 @@ fun MapScreen(
     var selectedLayerFilter by remember { mutableStateOf<EntityLayer?>(null) }
     var selectedCircuitId by remember { mutableStateOf<String?>(initialCircuitId ?: "cstc_loop") }
     var selectedRegion by remember { mutableStateOf<BrainRegion?>(null) }
+    var is3D by remember { mutableStateOf(true) }
+    var xray by remember { mutableStateOf(false) }
 
     // Zoom & pan transformations
     var scale by remember { mutableFloatStateOf(1f) }
@@ -190,10 +193,123 @@ fun MapScreen(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // 3D / 2D + X-ray toggles
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(
+                        selected = is3D,
+                        onClick = { is3D = true },
+                        label = { Text("3D Brain", fontSize = 12.sp) },
+                        leadingIcon = { Text("🧠", fontSize = 12.sp) },
+                        modifier = Modifier.testTag("toggle_3d")
+                    )
+                    FilterChip(
+                        selected = !is3D,
+                        onClick = { is3D = false },
+                        label = { Text("2D Map", fontSize = 12.sp) },
+                        modifier = Modifier.testTag("toggle_2d")
+                    )
+                    if (is3D) {
+                        FilterChip(
+                            selected = xray,
+                            onClick = { xray = !xray },
+                            label = { Text("X-ray see-through", fontSize = 12.sp) },
+                            modifier = Modifier.testTag("toggle_xray")
+                        )
+                    }
+                }
             }
         }
 
-        // Central Interactive Brain Canvas
+        if (is3D) {
+            // True 3D interactive brain: orbit / zoom / pan / one-tap nodes
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .testTag("interactive_brain_3d_container")
+            ) {
+                Brain3DView(
+                    activeCircuitId = selectedCircuitId,
+                    xray = xray,
+                    onRegionTap = { regionId ->
+                        selectedRegion = regions.find { it.id == regionId }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Bottom active selection banner (shared with 2D)
+                if (selectedRegion != null) {
+                    val region = selectedRegion!!
+                    Surface(
+                        color = colors.elevatedCard,
+                        border = BorderStroke(1.dp, CircuitPrimary),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(12.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "${region.abbreviation} • ${region.name}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colors.textHigh
+                                )
+                                Text(
+                                    text = region.role,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.textSecondary,
+                                    maxLines = 2
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Button(
+                                        onClick = {
+                                            val circuit = region.associatedCircuits.firstOrNull()
+                                            if (circuit != null) onEntitySelect(circuit, EntityLayer.CIRCUITS)
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                                    ) { Text("Circuit", fontSize = 12.sp) }
+                                    OutlinedButton(
+                                        onClick = {
+                                            // One-touch: jump to first linked transmitter / syndrome via detail sheet
+                                            val circuit = region.associatedCircuits.firstOrNull()
+                                            if (circuit != null) onEntitySelect(circuit, EntityLayer.CIRCUITS)
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                                    ) { Text("Receptors • Dx • Rx", fontSize = 12.sp) }
+                                }
+                            }
+                            IconButton(
+                                onClick = { selectedRegion = null },
+                                modifier = Modifier.testTag("dismiss_region_button")
+                            ) {
+                                Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = colors.textSecondary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Central Interactive Brain Canvas (2D fallback)
+        if (!is3D) {
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -453,6 +569,7 @@ fun MapScreen(
                 }
             }
         }
+        } // end if (!is3D)
 
         // Bottom Map Footer: Active Circuit info + Legend
         activeCircuit?.let { circuit ->
