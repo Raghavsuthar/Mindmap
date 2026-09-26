@@ -45,6 +45,11 @@ function fail(step, msg) {
   $('loadmsg').textContent = `Stuck at "${step}": ${msg}`;
   $('loadmsg').style.color = '#f87171';
   $('retryBtn').hidden = false;
+  try {
+    if (window.Android && typeof window.Android.onLoadFailed === 'function') {
+      window.Android.onLoadFailed(step, msg);
+    }
+  } catch (ignored) {}
 }
 $('retryBtn').addEventListener('click', () => window.location.reload());
 window.addEventListener('error', (e) => {
@@ -64,7 +69,7 @@ try {
   renderer = new THREE.WebGLRenderer({
     antialias: false,
     alpha: true,
-    powerPreference: 'low-power',
+    powerPreference: 'default',
     failIfMajorPerformanceCaveat: false
   });
 } catch (e1) {
@@ -81,6 +86,20 @@ if (renderer) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   renderer.localClippingEnabled = true;
+  if (renderer.domElement) {
+    renderer.domElement.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      console.warn('WebGL context lost, pausing animation loop');
+      renderer.setAnimationLoop(null);
+    }, false);
+    renderer.domElement.addEventListener('webglcontextrestored', () => {
+      console.info('WebGL context restored, resuming animation loop');
+      renderer.setAnimationLoop(() => {
+        if (controls) controls.update();
+        renderer.render(scene, camera);
+      });
+    }, false);
+  }
   container.appendChild(renderer.domElement);
 }
 
@@ -549,33 +568,37 @@ function withTimeout(promise, ms, label) {
 async function loadModelLadder() {
   const failures = [];
   // Rung 1: Draco with default (WASM) decoder.
+  const draco1 = new DRACOLoader(manager);
+  draco1.setDecoderPath(DRACO_PATH);
+  draco1.setWorkerLimit(1);
   try {
     step = 'loading 3D model (Draco)';
     $('loadmsg').textContent = 'Loading 3D model';
-    const draco = new DRACOLoader(manager);
-    draco.setDecoderPath(DRACO_PATH);
     const loader = new GLTFLoader(manager);
-    loader.setDRACOLoader(draco);
+    loader.setDRACOLoader(draco1);
     const gltf = await withTimeout(loader.loadAsync(MODEL_URL), 90000, 'Draco model load');
-    draco.dispose();
     return gltf;
   } catch (e) {
     failures.push('draco-wasm: ' + (e && e.message ? e.message : e));
+  } finally {
+    try { draco1.dispose(); } catch (ignored) {}
   }
   // Rung 2: Draco with compatibility (asm.js) decoder, no WebAssembly needed.
+  const draco2 = new DRACOLoader(manager);
+  draco2.setDecoderPath(DRACO_PATH);
+  draco2.setWorkerLimit(1);
+  draco2.setDecoderConfig({ type: 'js' });
   try {
     step = 'retrying with compatibility decoder';
     $('loadmsg').textContent = 'Retrying with compatibility decoder…';
-    const draco = new DRACOLoader(manager);
-    draco.setDecoderPath(DRACO_PATH);
-    draco.setDecoderConfig({ type: 'js' });
     const loader = new GLTFLoader(manager);
-    loader.setDRACOLoader(draco);
+    loader.setDRACOLoader(draco2);
     const gltf = await withTimeout(loader.loadAsync(MODEL_URL), 120000, 'Compat-decoder model load');
-    draco.dispose();
     return gltf;
   } catch (e) {
     failures.push('draco-js: ' + (e && e.message ? e.message : e));
+  } finally {
+    try { draco2.dispose(); } catch (ignored) {}
   }
   // Rung 3: standard loader without worker / fallback
   try {
@@ -721,4 +744,13 @@ if (renderer) {
     if (controls) controls.update();
     renderer.render(scene, camera);
   });
+
+  const cleanup = () => {
+    try {
+      renderer.setAnimationLoop(null);
+      renderer.dispose();
+    } catch (ignored) {}
+  };
+  window.addEventListener('beforeunload', cleanup);
+  window.addEventListener('pagehide', cleanup);
 }

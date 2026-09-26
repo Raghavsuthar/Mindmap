@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -35,6 +36,7 @@ fun Brain3DView(
     xray: Boolean,
     onRegionTap: (String) -> Unit,
     onStructureTap: (manifestId: Int, label: String, region: String, source: String, category: String) -> Unit,
+    onFallbackTo2D: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     // activeCircuitId is accepted for API stability; circuit emphasis is
@@ -71,6 +73,12 @@ fun Brain3DView(
                         category: String
                     ) {
                         post { onStructureTap(manifestId, label, region, source, category) }
+                    }
+
+                    @JavascriptInterface
+                    fun onLoadFailed(step: String, message: String) {
+                        Log.w("Brain3D", "3D loader failed at step $step: $message")
+                        post { onFallbackTo2D?.invoke() }
                     }
                 }, "Android")
                 webChromeClient = object : WebChromeClient() {
@@ -138,6 +146,22 @@ fun Brain3DView(
                         super.onReceivedError(view, request, error)
                         Log.e("Brain3D", "WebView error: ${error.description} @ ${request.url}")
                     }
+
+                    override fun onRenderProcessGone(
+                        view: WebView,
+                        detail: RenderProcessGoneDetail
+                    ): Boolean {
+                        Log.w("Brain3D", "WebView render process gone (didCrash=${detail.didCrash()})")
+                        try {
+                            view.stopLoading()
+                            (view.parent as? android.view.ViewGroup)?.removeView(view)
+                            view.destroy()
+                        } catch (e: Exception) {
+                            Log.w("Brain3D", "Error tearing down dead WebView: ${e.message}")
+                        }
+                        post { onFallbackTo2D?.invoke() }
+                        return true
+                    }
                 }
                 loadUrl("https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/brain3d/viewer.html")
             }
@@ -147,6 +171,17 @@ fun Brain3DView(
                 "if(window.setCortexOpacity) setCortexOpacity(${if (xray) "0.08" else "1.0"});",
                 null
             )
+        },
+        onRelease = { webView ->
+            try {
+                webView.stopLoading()
+                webView.loadUrl("about:blank")
+                webView.clearHistory()
+                webView.removeAllViews()
+                webView.destroy()
+            } catch (e: Exception) {
+                Log.w("Brain3D", "Error releasing WebView: ${e.message}")
+            }
         }
     )
 }

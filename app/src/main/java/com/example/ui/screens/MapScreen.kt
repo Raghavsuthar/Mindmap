@@ -56,9 +56,9 @@ fun MapScreen(
     var selectedLayerFilter by remember { mutableStateOf<EntityLayer?>(null) }
     var selectedCircuitId by remember { mutableStateOf<String?>(initialCircuitId ?: "cstc_loop") }
     var selectedRegion by remember { mutableStateOf<BrainRegion?>(null) }
-    // 3D default ON: the viewer is now the offline sourced atlas (no CDN
-    // failure mode that previously motivated disabling it); 2D remains one tap away.
-    var is3D by remember { mutableStateOf(true) }
+    // Default to the native 2D connectome map for instant launch and rock-solid stability
+    // across all devices and emulators; true 3D interactive brain is one tap away.
+    var is3D by remember { mutableStateOf(false) }
     var xray by remember { mutableStateOf(false) }
 
     // Zoom & pan transformations
@@ -250,6 +250,9 @@ fun MapScreen(
                     onStructureTap = { _, label, region, source, category ->
                         val coarseId = BrainAtlas3D.mapToCoarseRegion(label, region, source, category)
                         selectedRegion = coarseId?.let { id -> regions.find { it.id == id } }
+                    },
+                    onFallbackTo2D = {
+                        is3D = false
                     },
                     modifier = Modifier.fillMaxSize()
                 )
