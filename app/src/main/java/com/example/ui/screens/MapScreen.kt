@@ -61,6 +61,7 @@ fun MapScreen(
     var is3D by remember { mutableStateOf(false) }
     var xray by remember { mutableStateOf(false) }
     var showFallbackNotice by remember { mutableStateOf(false) }
+    var fallbackError by remember { mutableStateOf<String?>(null) }
 
     // Zoom & pan transformations
     var scale by remember { mutableFloatStateOf(1f) }
@@ -240,27 +241,57 @@ fun MapScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Using 2D Connectome Map for maximum stability on this device.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.textSecondary,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = { showFallbackNotice = false },
-                                modifier = Modifier.size(24.dp)
+                        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Dismiss",
-                                    tint = colors.textSecondary,
-                                    modifier = Modifier.size(14.dp)
+                                Text(
+                                    text = "Using 2D Connectome Map for maximum stability on this device.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.textSecondary,
+                                    modifier = Modifier.weight(1f)
                                 )
+                                IconButton(
+                                    onClick = { showFallbackNotice = false },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Dismiss",
+                                        tint = colors.textSecondary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+                            if (fallbackError != null) {
+                                Text(
+                                    text = "3D error: $fallbackError",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 10.5.sp
+                                    ),
+                                    color = AlertRed,
+                                    modifier = Modifier.padding(top = 2.dp)
+                                )
+                                Button(
+                                    onClick = {
+                                        fallbackError = null
+                                        showFallbackNotice = false
+                                        is3D = true
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = CircuitBorder,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(6.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                    modifier = Modifier
+                                        .padding(top = 6.dp)
+                                        .testTag("retry_3d_button")
+                                ) {
+                                    Text("Retry 3D view", style = MaterialTheme.typography.labelSmall)
+                                }
                             }
                         }
                     }
@@ -287,8 +318,9 @@ fun MapScreen(
                         val coarseId = BrainAtlas3D.mapToCoarseRegion(label, region, source, category)
                         selectedRegion = coarseId?.let { id -> regions.find { it.id == id } }
                     },
-                    onFallbackTo2D = {
+                    on3DFailed = { step, message ->
                         is3D = false
+                        fallbackError = "$step: $message"
                         showFallbackNotice = true
                     },
                     modifier = Modifier.fillMaxSize()

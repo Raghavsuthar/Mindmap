@@ -36,7 +36,7 @@ fun Brain3DView(
     xray: Boolean,
     onRegionTap: (String) -> Unit,
     onStructureTap: (manifestId: Int, label: String, region: String, source: String, category: String) -> Unit,
-    onFallbackTo2D: (() -> Unit)? = null,
+    on3DFailed: ((step: String, message: String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     // activeCircuitId is accepted for API stability; circuit emphasis is
@@ -78,7 +78,7 @@ fun Brain3DView(
                     @JavascriptInterface
                     fun onLoadFailed(step: String, message: String) {
                         Log.w("Brain3D", "3D loader failed at step $step: $message")
-                        post { onFallbackTo2D?.invoke() }
+                        post { on3DFailed?.invoke(step, message) }
                     }
                 }, "Android")
                 webChromeClient = object : WebChromeClient() {
@@ -159,7 +159,7 @@ fun Brain3DView(
                         } catch (e: Exception) {
                             Log.w("Brain3D", "Error tearing down dead WebView: ${e.message}")
                         }
-                        post { onFallbackTo2D?.invoke() }
+                        post { on3DFailed?.invoke("RenderProcess", "WebView renderer process gone (crash=${detail.didCrash()})") }
                         return true
                     }
                 }
