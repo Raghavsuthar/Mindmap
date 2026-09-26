@@ -34,10 +34,12 @@ const CATEGORY_STYLE = {
 
 const $ = (id) => document.getElementById(id);
 
-function fail(msg) {
-  $('loadmsg').textContent = msg;
+function fail(step, msg) {
+  $('loadmsg').textContent = `Stuck at "${step}": ${msg}`;
   $('loadmsg').style.color = '#f87171';
+  $('retryBtn').hidden = false;
 }
+$('retryBtn').addEventListener('click', () => window.location.reload());
 window.addEventListener('error', (e) => {
   if (!$('loader').classList.contains('done')) fail('Error: ' + (e.message || 'failed to start'));
 });
@@ -232,7 +234,9 @@ function pickAt(cx, cy) {
   pointer.x = (cx / window.innerWidth) * 2 - 1;
   pointer.y = -(cy / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(anatomyMeshes, false);
+  // NB: Raycaster ignores Object3D.visible, so filter hidden meshes out:
+  // otherwise taps land on invisible (filtered/deselected) structures.
+  const hits = raycaster.intersectObjects(anatomyMeshes.filter((m) => m.visible), false);
   return hits.length ? hits[0].object : null;
 }
 renderer.domElement.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
@@ -410,12 +414,19 @@ manager.onProgress = (_url, loaded, total) => {
 };
 
 async function init() {
-  $('loadmsg').textContent = 'Fetching metadata';
-  const [manifest, funcs] = await Promise.all([
-    (await fetch(MANIFEST_URL)).json(),
-    (await fetch(FUNCTIONS_URL)).json().catch(() => ({})),
-  ]);
-  functions = funcs;
+  let step = 'starting renderer';
+  try {
+    step = 'fetching metadata';
+    $('loadmsg').textContent = 'Fetching metadata';
+    const [manifestRes, funcsRes] = await Promise.all([
+      fetch(MANIFEST_URL),
+      fetch(FUNCTIONS_URL).catch(() => null),
+    ]);
+    if (!manifestRes || !manifestRes.ok) {
+      throw new Error(`metadata HTTP ${manifestRes ? manifestRes.status : 'unreachable'} @ ${MANIFEST_URL}`);
+    }
+    const manifest = await manifestRes.json();
+    functions = funcsRes && funcsRes.ok ? await funcsRes.json().catch(() => ({})) : {};
   for (const n of manifest.nodes) manifestById.set(n.id, n);
   $('stats').textContent = `${manifest.nodes.length} structures · ${Object.keys(manifest.categories || {}).length} systems`;
 
@@ -437,7 +448,8 @@ async function init() {
     if (selected && !selected.visible) hideCard();
   });
 
-  $('loadmsg').textContent = 'Loading 3D model (offline)';
+  $('loadmsg').textContent = 'Loading 3D model';
+  step = 'loading 3D model';
   const draco = new DRACOLoader(manager);
   draco.setDecoderPath(DRACO_PATH);
   const loader = new GLTFLoader(manager);
@@ -502,12 +514,13 @@ async function init() {
   wireUI();
   $('loadmsg').textContent = 'Ready';
   $('loader').classList.add('done');
+  } catch (err) {
+    console.error(err);
+    fail(step, err && err.message ? err.message : String(err));
+  }
 }
 
-init().catch((err) => {
-  console.error(err);
-  fail('Could not load the brain model: ' + (err && err.message ? err.message : err));
-});
+init();
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;

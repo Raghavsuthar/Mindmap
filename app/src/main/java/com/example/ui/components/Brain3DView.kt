@@ -8,24 +8,25 @@ import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.webkit.WebViewAssetLoader
+import androidx.webkit.WebViewClientCompat
 
 /**
  * True 3D interactive brain: the real sourced Brain-Project model
  * (437 TA2-named structures, Draco-compressed) rendered offline from
  * app assets with Three.js in a WebView.
- * - Rotate / pinch-zoom / pan, tap structure -> true atlas card
- * - Search, labels, sagittal/coronal/axial slice planes
- * - [xray] fades the cortical surface (see-through)
- * - [onStructureTap] reports (manifestId, label, region, source, category);
- *   the host maps it onto the coarse clinical model where an explicit
- *   mapping exists, otherwise the in-viewer atlas card stands alone.
+ *
+ * Assets are served through [WebViewAssetLoader] over a same-origin
+ * https://appassets.androidx.webkit/ URL. file:// URLs are deliberately
+ * avoided: ES modules, fetch() and the Draco Web Worker are all blocked
+ * or unreliable off file:// on many devices, which surfaced as a
+ * never-loading model.
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -45,14 +46,14 @@ fun Brain3DView(
             .fillMaxSize()
             .testTag("brain3d_view"),
         factory = { ctx ->
+            val assetLoader = WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(ctx))
+                .build()
             WebView(ctx).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.allowFileAccess = true
                 settings.allowContentAccess = true
-                // Local file:// modules, model, manifest and Draco decoder.
-                settings.allowFileAccessFromFileURLs = true
-                settings.allowUniversalAccessFromFileURLs = true
                 settings.mediaPlaybackRequiresUserGesture = false
                 setBackgroundColor(android.graphics.Color.parseColor("#0B0F17"))
                 addJavascriptInterface(object {
@@ -81,7 +82,12 @@ fun Brain3DView(
                         return true
                     }
                 }
-                webViewClient = object : WebViewClient() {
+                webViewClient = object : WebViewClientCompat() {
+                    override fun shouldInterceptRequest(
+                        view: WebView,
+                        request: WebResourceRequest
+                    ) = assetLoader.shouldInterceptRequest(request.url)
+
                     override fun onReceivedError(
                         view: WebView?,
                         request: WebResourceRequest?,
@@ -91,7 +97,7 @@ fun Brain3DView(
                         Log.e("Brain3D", "WebView error: ${error?.description} @ ${request?.url}")
                     }
                 }
-                loadUrl("file:///android_asset/brain3d/viewer.html")
+                loadUrl("https://appassets.androidx.webkit/assets/brain3d/viewer.html")
             }
         },
         update = { web ->
