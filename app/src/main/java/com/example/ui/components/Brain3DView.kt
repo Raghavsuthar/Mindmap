@@ -87,7 +87,47 @@ fun Brain3DView(
                         view: WebView,
                         request: WebResourceRequest
                     ): WebResourceResponse? {
-                        return assetLoader.shouldInterceptRequest(request.url)
+                        val url = request.url
+                        if (url.host.equals(WebViewAssetLoader.DEFAULT_DOMAIN, ignoreCase = true)) {
+                            val path = url.path.orEmpty()
+                            if (path == "/favicon.ico" || path.endsWith("/favicon.ico")) {
+                                return WebResourceResponse(
+                                    "image/x-icon",
+                                    null,
+                                    204,
+                                    "No Content",
+                                    emptyMap(),
+                                    java.io.ByteArrayInputStream(ByteArray(0))
+                                )
+                            }
+                            val response = assetLoader.shouldInterceptRequest(url)
+                            if (response != null) {
+                                return when {
+                                    path.endsWith(".glb", ignoreCase = true) -> {
+                                        WebResourceResponse("model/gltf-binary", null, response.data)
+                                    }
+                                    path.endsWith(".wasm", ignoreCase = true) -> {
+                                        WebResourceResponse("application/wasm", null, response.data)
+                                    }
+                                    path.endsWith(".json", ignoreCase = true) -> {
+                                        WebResourceResponse("application/json", "UTF-8", response.data)
+                                    }
+                                    path.endsWith(".js", ignoreCase = true) -> {
+                                        WebResourceResponse("application/javascript", "UTF-8", response.data)
+                                    }
+                                    else -> response
+                                }
+                            }
+                            return WebResourceResponse(
+                                "text/plain",
+                                "UTF-8",
+                                404,
+                                "Not Found",
+                                emptyMap(),
+                                java.io.ByteArrayInputStream("Not found".toByteArray())
+                            )
+                        }
+                        return super.shouldInterceptRequest(view, request)
                     }
 
                     override fun onReceivedError(

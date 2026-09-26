@@ -7,7 +7,6 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 // Fully offline viewer: real sourced anatomy (Brain Project, CC BY-SA 4.0).
 // Runs from Android assets via file:// URLs — no network needed.
 const MODEL_URL = 'models/brain.glb';
-const PLAIN_URL = 'models/brain-plain.glb'; // decoder-free fallback (34 MB, same 437 structures)
 const MANIFEST_URL = 'models/manifest.json';
 const FUNCTIONS_URL = 'functions.json';
 const DRACO_PATH = 'vendor/draco/';
@@ -108,6 +107,9 @@ scene.add(fill);
 const rim = new THREE.DirectionalLight(0xffe2d2, 0.9);
 rim.position.set(-0.2, 0.4, -0.8);
 scene.add(rim);
+
+let idleTimer = null;
+let spinWanted = true;
 
 const controls = (renderer && renderer.domElement) ? new OrbitControls(camera, renderer.domElement) : null;
 if (controls) {
@@ -470,11 +472,11 @@ function wireUI() {
     updateVisibility();
   });
 
-  const segBtns = [...document.querySelectorAll('.seg button')];
+  const sliceBtns = [...document.querySelectorAll('[data-slice]')];
   const sliceSlider = $('slicePos');
-  segBtns.forEach((b) => {
+  sliceBtns.forEach((b) => {
     b.addEventListener('click', () => {
-      segBtns.forEach((x) => x.classList.toggle('on', x === b));
+      sliceBtns.forEach((x) => x.classList.toggle('on', x === b));
       sliceMode = b.dataset.slice;
       sliceSlider.disabled = sliceMode === 'off';
       applySlice();
@@ -575,15 +577,15 @@ async function loadModelLadder() {
   } catch (e) {
     failures.push('draco-js: ' + (e && e.message ? e.message : e));
   }
-  // Rung 3: uncompressed model, no decoder at all.
+  // Rung 3: standard loader without worker / fallback
   try {
-    step = 'loading uncompressed fallback';
-    $('loadmsg').textContent = 'Loading full-quality fallback (slower)…';
+    step = 'loading standard model';
+    $('loadmsg').textContent = 'Loading 3D model…';
     const loader = new GLTFLoader(manager);
-    const gltf = await withTimeout(loader.loadAsync(PLAIN_URL), 180000, 'Fallback model load');
+    const gltf = await withTimeout(loader.loadAsync(MODEL_URL), 90000, 'Standard model load');
     return gltf;
   } catch (e) {
-    failures.push('plain: ' + (e && e.message ? e.message : e));
+    failures.push('standard: ' + (e && e.message ? e.message : e));
   }
   const failedAssets = loadErrors.length ? ` Failed assets: ${[...new Set(loadErrors)].join(', ')}` : '';
   throw new Error(failures.join(' | ') + '.' + failedAssets);
