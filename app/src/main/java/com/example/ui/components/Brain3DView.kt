@@ -1,7 +1,12 @@
 package com.example.ui.components
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,13 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.data.BrainAtlas3D
-import org.json.JSONObject
 
 /**
- * True 3D interactive brain (Three.js + OrbitControls in a WebView).
+ * True 3D interactive brain (Three.js + OrbitControls bundled locally in WebView assets).
  * - Rotate / pinch-zoom / pan, tap node -> one-touch detail
  * - See-through translucent shell + X-ray mode
- * - Data is 100% the evidence-based NeuroMapRepository via [BrainAtlas3D]
+ * - 100% offline, zero network latency, zero CORS blocking
+ * - Data from evidence-based NeuroMapRepository via [BrainAtlas3D]
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -28,14 +33,6 @@ fun Brain3DView(
     modifier: Modifier = Modifier
 ) {
     val payload = remember { BrainAtlas3D.toJsonPayload() }
-    // Escape for single-quoted JS injection: JSONObject.quote gives a
-    // double-quoted JSON string; strip outer quotes then escape ' for JS.
-    // Also guard against </script> breaking out of the module script.
-    val escaped = remember(payload) {
-        JSONObject.quote(payload).drop(1).dropLast(1)
-            .replace("'", "\\'")
-            .replace("</script", "<\\/script")
-    }
 
     AndroidView(
         modifier = modifier
@@ -45,28 +42,63 @@ fun Brain3DView(
             WebView(ctx).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
+                settings.allowFileAccess = true
+                settings.allowContentAccess = true
+                @Suppress("DEPRECATION")
+                settings.allowFileAccessFromFileURLs = true
+                @Suppress("DEPRECATION")
+                settings.allowUniversalAccessFromFileURLs = true
                 settings.mediaPlaybackRequiresUserGesture = false
+
                 setBackgroundColor(android.graphics.Color.parseColor("#0B0F17"))
+
                 addJavascriptInterface(object {
+                    @JavascriptInterface
+                    fun getPayload(): String {
+                        return payload
+                    }
+
                     @JavascriptInterface
                     fun onRegionTap(regionId: String) {
                         post { onRegionTap(regionId) }
                     }
                 }, "Android")
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView, url: String) {
-                        super.onPageFinished(view, url)
-                        view.evaluateJavascript(
-                            "window.__PENDING__ = JSON.parse('$escaped'); if(window.initBrain) initBrain(window.__PENDING__);",
-                            null
-                        )
-                        view.evaluateJavascript(
-                            "window.setActiveCircuit(${if (activeCircuitId == null) "null" else "'$activeCircuitId'"});",
-                            null
-                        )
-                        view.evaluateJavascript("window.setXray(${if (xray) "true" else "false"});", null)
+
+                webChromeClient = object : WebChromeClient() {
+                    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                        Log.d("Brain3D", "${consoleMessage?.message()} -- line ${consoleMessage?.lineNumber()} (${consoleMessage?.sourceId()})")
+                        return true
                     }
                 }
+
+                webViewClient = object : WebViewClient() {
+                    override fun onReceivedError(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                        error: WebResourceError?
+                    ) {
+                        super.onReceivedError(view, request, error)
+                        Log.e("Brain3D", "WebView error: ${error?.description}")
+                    }
+
+                    override fun onPageFinished(view: WebView, url: String) {
+                        super.onPageFinished(view, url)
+                        // Trigger initialization and sync state
+                        view.evaluateJavascript(
+                            "if(window.initBrain && window.Android && window.Android.getPayload) { initBrain(JSON.parse(window.Android.getPayload())); }",
+                            null
+                        )
+                        view.evaluateJavascript(
+                            "if(window.setActiveCircuit) { window.setActiveCircuit(${if (activeCircuitId == null) "null" else "'$activeCircuitId'"}); }",
+                            null
+                        )
+                        view.evaluateJavascript(
+                            "if(window.setXray) { window.setXray(${if (xray) "true" else "false"}); }",
+                            null
+                        )
+                    }
+                }
+
                 loadUrl("file:///android_asset/brain3d/brain3d.html")
             }
         },
