@@ -34,6 +34,13 @@ const CATEGORY_STYLE = {
 
 const $ = (id) => document.getElementById(id);
 
+// Brainstem floor: the cord-bound tails below are truncated at the
+// inferior tip of the medulla (computed at runtime from TRIM_REF_IDS),
+// so the model ends at the brainstem instead of trailing into the neck.
+// IDs are Brain-Project manifest ids (verified against manifest.json).
+const TRIM_IDS = [30, 31, 85, 86, 294, 295]; // ant. spinal aa., corticospinal + reticulospinal tracts
+const TRIM_REF_IDS = [196, 327, 328, 235, 236]; // medulla, pyramids, olives (left+right)
+
 function fail(step, msg) {
   $('loadmsg').textContent = `Stuck at "${step}": ${msg}`;
   $('loadmsg').style.color = '#f87171';
@@ -156,6 +163,7 @@ let hovered = null;
 let homePos = camera.position.clone();
 let homeTarget = new THREE.Vector3(0, 0, 0);
 const slicePlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+const trimPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), -Infinity); // keeps y >= floor once set
 const noPlanes = [];
 const onePlane = [slicePlane];
 let sliceMode = 'off';
@@ -191,7 +199,7 @@ function showCard(anat) {
 
 function hideCard() {
   if (selected) {
-    selected.material = baseMats[selected.userData.anat.cat];
+    selected.material = variantFor(selected, 'base');
     selected = null;
   }
   $('card').hidden = true;
@@ -210,18 +218,18 @@ function select(mesh) {
   if (!mesh) return;
   selected = mesh;
   ensureVariants(mesh.userData.anat.cat);
-  mesh.material = selectMats[mesh.userData.anat.cat];
+  mesh.material = variantFor(mesh, 'select');
   showCard(mesh.userData.anat);
   bridgeTap(mesh.userData.anat);
 }
 
 function setHovered(mesh) {
   if (hovered === mesh) return;
-  if (hovered && hovered !== selected) hovered.material = baseMats[hovered.userData.anat.cat];
+  if (hovered && hovered !== selected) hovered.material = variantFor(hovered, 'base');
   hovered = mesh;
   if (hovered && hovered !== selected) {
     ensureVariants(hovered.userData.anat.cat);
-    hovered.material = hoverMats[hovered.userData.anat.cat];
+    hovered.material = variantFor(hovered, 'hover');
   }
   renderer.domElement.style.cursor = hovered ? 'pointer' : '';
 }
@@ -264,7 +272,38 @@ function updateVisibility() {
 
 function allMats() {
   return [...Object.values(baseMats), ...Object.values(hoverMats),
-    ...Object.values(selectMats), ...labelMats];
+    ...Object.values(selectMats), ...Object.values(trimMats.base),
+    ...Object.values(trimMats.hover), ...Object.values(trimMats.select),
+    ...labelMats];
+}
+
+// Clipping composition: the global slice plane plus, for cord-trimmed
+// meshes, the brainstem-floor plane. Arrays are rebuilt from the live
+// plane objects so later constant updates apply automatically.
+function planesFor(trimmed) {
+  if (trimmed && clipActive) return [slicePlane, trimPlane];
+  if (trimmed) return [trimPlane];
+  if (clipActive) return onePlane;
+  return noPlanes;
+}
+
+const trimMats = { base: {}, hover: {}, select: {} };
+
+function variantFor(mesh, kind) {
+  const cat = mesh.userData.anat.cat;
+  if (kind !== 'base') ensureVariants(cat);
+  if (!mesh.userData.trimmed) {
+    return kind === 'base' ? baseMats[cat] : kind === 'hover' ? hoverMats[cat] : selectMats[cat];
+  }
+  const cache = trimMats[kind];
+  if (!cache[cat]) {
+    const src = kind === 'base' ? baseMats[cat] : kind === 'hover' ? hoverMats[cat] : selectMats[cat];
+    const m = src.clone();
+    m.userData.trimmed = true;
+    m.clippingPlanes = planesFor(true);
+    cache[cat] = m;
+  }
+  return cache[cat];
 }
 
 function makeLabelSprite(mesh) {
@@ -294,7 +333,7 @@ function makeLabelSprite(mesh) {
   const tex = new THREE.CanvasTexture(c);
   tex.anisotropy = 4;
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
-  mat.clippingPlanes = clipActive ? onePlane : noPlanes;
+  mat.clippingPlanes = planesFor(false);
   labelMats.add(mat);
   const sp = new THREE.Sprite(mat);
   sp.scale.set(labelWorld * 2.4, labelWorld * 0.6, 1);
@@ -312,7 +351,7 @@ function applySlice() {
   if (sliceMode === 'off' || !sliceBounds) {
     if (clipActive) {
       clipActive = false;
-      for (const m of allMats()) { m.clippingPlanes = noPlanes; m.needsUpdate = true; }
+      for (const m of allMats()) { m.clippingPlanes = planesFor(m.userData.trimmed); m.needsUpdate = true; }
     }
     return;
   }
@@ -328,7 +367,7 @@ function applySlice() {
   slicePlane.constant = -c;
   if (!clipActive) {
     clipActive = true;
-    for (const m of allMats()) { m.clippingPlanes = onePlane; m.needsUpdate = true; }
+    for (const m of allMats()) { m.clippingPlanes = planesFor(m.userData.trimmed); m.needsUpdate = true; }
   }
 }
 
@@ -480,7 +519,8 @@ async function init() {
       source: extra.bx_source || (rec && rec.source) || '',
     };
     if (!baseMats[cat]) baseMats[cat] = tissueMaterial(cat);
-    obj.material = baseMats[cat];
+    if (TRIM_IDS.includes(anat.id)) obj.userData.trimmed = true;
+    obj.material = variantFor(obj, 'base');
     obj.castShadow = true;
     obj.receiveShadow = true;
     obj.userData.anat = anat;
@@ -494,6 +534,20 @@ async function init() {
   });
 
   if (anatomyMeshes.length === 0) throw new Error('Model loaded but no named structures found');
+
+  // Brainstem floor: lowest point of medulla/pyramids/olives. Cord-bound
+  // tails (TRIM_IDS) are clipped here; constant defaults to -Infinity
+  // (keep everything) if the reference meshes are ever absent.
+  step = 'trimming spinal cord tails';
+  const trimRefBox = new THREE.Box3();
+  let hasTrimRef = false;
+  for (const m of anatomyMeshes) {
+    if (TRIM_REF_IDS.includes(m.userData.anat.id)) {
+      trimRefBox.expandByObject(m);
+      hasTrimRef = true;
+    }
+  }
+  if (hasTrimRef) trimPlane.constant = trimRefBox.min.y;
 
   scene.add(model);
   const bbox = new THREE.Box3().setFromObject(model);
