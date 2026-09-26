@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 // Fully offline viewer: real sourced anatomy (Brain Project, CC BY-SA 4.0).
 // Runs from Android assets via file:// URLs — no network needed.
@@ -18,18 +17,18 @@ const TA2_JUNK = new Set([
 ]);
 
 const CATEGORY_STYLE = {
-  cortex: { color: 0xc79a90, roughness: 0.42, label: 'Cortex' },
-  cerebellum: { color: 0xbd9489, roughness: 0.46, label: 'Cerebellum' },
-  brainstem: { color: 0xb3937a, roughness: 0.5, label: 'Brainstem' },
-  deep_grey: { color: 0x9c6a5c, roughness: 0.48, label: 'Deep grey' },
-  diencephalon: { color: 0xa67e6b, roughness: 0.48, label: 'Diencephalon' },
-  white_matter: { color: 0xe2d6c2, roughness: 0.55, label: 'White matter' },
-  tracts: { color: 0xd6c5a2, roughness: 0.5, label: 'Tracts' },
-  ventricles: { color: 0xafcadd, roughness: 0.25, opacity: 0.55, label: 'Ventricles' },
-  arteries: { color: 0xa83a32, roughness: 0.35, label: 'Arteries' },
-  veins_sinuses: { color: 0x416b99, roughness: 0.35, label: 'Veins & sinuses' },
-  cranial_nerves: { color: 0xd3b268, roughness: 0.45, label: 'Cranial nerves' },
-  meninges_dura: { color: 0xc9ced1, roughness: 0.6, opacity: 0.35, label: 'Meninges' },
+  cortex: { color: 0xc79a90, label: 'Cortex' },
+  cerebellum: { color: 0xbd9489, label: 'Cerebellum' },
+  brainstem: { color: 0xb3937a, label: 'Brainstem' },
+  deep_grey: { color: 0x9c6a5c, label: 'Deep grey' },
+  diencephalon: { color: 0xa67e6b, label: 'Diencephalon' },
+  white_matter: { color: 0xe2d6c2, label: 'White matter' },
+  tracts: { color: 0xd6c5a2, label: 'Tracts' },
+  ventricles: { color: 0xafcadd, opacity: 0.55, label: 'Ventricles' },
+  arteries: { color: 0xa83a32, label: 'Arteries' },
+  veins_sinuses: { color: 0x416b99, label: 'Veins & sinuses' },
+  cranial_nerves: { color: 0xd3b268, label: 'Cranial nerves' },
+  meninges_dura: { color: 0xc9ced1, opacity: 0.35, label: 'Meninges' },
 };
 
 const $ = (id) => document.getElementById(id);
@@ -70,21 +69,22 @@ try {
     antialias: false,
     alpha: true,
     powerPreference: 'default',
+    precision: 'mediump',
+    depth: true,
+    stencil: false,
     failIfMajorPerformanceCaveat: false
   });
 } catch (e1) {
   try {
-    renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer = new THREE.WebGLRenderer({ alpha: true, precision: 'mediump' });
   } catch (e2) {
     fail('WebGL', 'WebGL not supported: ' + (e2.message || e1.message));
   }
 }
 
 if (renderer) {
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setPixelRatio(1.0);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
   renderer.localClippingEnabled = true;
   if (renderer.domElement) {
     renderer.domElement.addEventListener('webglcontextlost', (e) => {
@@ -107,23 +107,14 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.01, 100);
 camera.position.set(0.35, 0.22, 0.62);
 
-if (renderer) {
-  try {
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  } catch (err) {
-    console.warn('RoomEnvironment PMREM not supported in this context, fallback to lights', err);
-  }
-}
-
-scene.add(new THREE.HemisphereLight(0xfff1e6, 0x232b34, 0.55));
-const key = new THREE.DirectionalLight(0xfff4ea, 1.6);
+scene.add(new THREE.HemisphereLight(0xfff1e6, 0x232b34, 0.8));
+const key = new THREE.DirectionalLight(0xfff4ea, 1.4);
 key.position.set(0.6, 0.9, 0.7);
 scene.add(key);
-const fill = new THREE.DirectionalLight(0xdfe8ff, 0.45);
+const fill = new THREE.DirectionalLight(0xdfe8ff, 0.6);
 fill.position.set(-0.7, 0.1, 0.5);
 scene.add(fill);
-const rim = new THREE.DirectionalLight(0xffe2d2, 0.9);
+const rim = new THREE.DirectionalLight(0xffe2d2, 0.7);
 rim.position.set(-0.2, 0.4, -0.8);
 scene.add(rim);
 
@@ -150,21 +141,9 @@ if (controls) {
 }
 
 function tissueMaterial(cat) {
-  const style = CATEGORY_STYLE[cat] || { color: 0xb9a89c, roughness: 0.5 };
+  const style = CATEGORY_STYLE[cat] || { color: 0xb9a89c };
   const color = new THREE.Color(style.color);
-  let mat;
-  if (cat === 'cortex' || cat === 'cerebellum') {
-    mat = new THREE.MeshPhysicalMaterial({
-      color, roughness: style.roughness, metalness: 0.0,
-      clearcoat: 0.5, clearcoatRoughness: 0.55,
-      sheen: 1.0, sheenColor: new THREE.Color(0xffd9cd), sheenRoughness: 0.55,
-      envMapIntensity: 0.65,
-    });
-  } else {
-    mat = new THREE.MeshStandardMaterial({
-      color, roughness: style.roughness, metalness: 0.0, envMapIntensity: 0.7,
-    });
-  }
+  const mat = new THREE.MeshLambertMaterial({ color });
   if (style.opacity !== undefined && style.opacity < 1) {
     mat.transparent = true;
     mat.opacity = style.opacity;
@@ -182,13 +161,11 @@ function ensureVariants(cat) {
   if (!hoverMats[cat]) {
     const m = baseMats[cat].clone();
     m.emissive = new THREE.Color(baseMats[cat].color).multiplyScalar(0.28);
-    m.emissiveIntensity = 1;
     hoverMats[cat] = m;
   }
   if (!selectMats[cat]) {
     const m = baseMats[cat].clone();
     m.emissive = new THREE.Color(baseMats[cat].color).multiplyScalar(0.5);
-    m.emissiveIntensity = 1;
     selectMats[cat] = m;
   }
 }
@@ -678,8 +655,8 @@ async function init() {
     if (!baseMats[cat]) baseMats[cat] = tissueMaterial(cat);
     if (TRIM_IDS.includes(anat.id)) obj.userData.trimmed = true;
     obj.material = variantFor(obj, 'base');
-    obj.castShadow = true;
-    obj.receiveShadow = true;
+    obj.castShadow = false;
+    obj.receiveShadow = false;
     obj.userData.anat = anat;
     searchIndex.push({
       mesh: obj,

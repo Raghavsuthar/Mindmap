@@ -60,6 +60,7 @@ fun MapScreen(
     // across all devices and emulators; true 3D interactive brain is one tap away.
     var is3D by remember { mutableStateOf(false) }
     var xray by remember { mutableStateOf(false) }
+    var showFallbackNotice by remember { mutableStateOf(false) }
 
     // Zoom & pan transformations
     var scale by remember { mutableFloatStateOf(1f) }
@@ -229,6 +230,41 @@ fun MapScreen(
                         )
                     }
                 }
+
+                if (showFallbackNotice && !is3D) {
+                    Surface(
+                        color = colors.elevatedCard,
+                        border = BorderStroke(1.dp, colors.hairlineBorder),
+                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Using 2D Connectome Map for maximum stability on this device.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.textSecondary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { showFallbackNotice = false },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    tint = colors.textSecondary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -253,6 +289,7 @@ fun MapScreen(
                     },
                     onFallbackTo2D = {
                         is3D = false
+                        showFallbackNotice = true
                     },
                     modifier = Modifier.fillMaxSize()
                 )
