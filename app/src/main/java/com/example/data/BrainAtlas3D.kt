@@ -53,6 +53,36 @@ object BrainAtlas3D {
         return Triple(x, y, z)
     }
 
+    /**
+     * Explicit coarse mapping from a tapped true-anatomy structure onto the
+     * 16-region clinical model. Returns the coarse region id, or null when no
+     * defensible mapping exists — the caller then shows the atlas card alone
+     * instead of guessing. Rules use manifest label/region/source/category.
+     */
+    fun mapToCoarseRegion(
+        label: String,
+        region: String,
+        source: String,
+        category: String
+    ): String? {
+        val l = label.lowercase()
+        val s = source.lowercase()
+        if ("amygdala" in s || "amygdala" in l) return "amygdala"
+        if ("hippocamp" in l) return "hippocampus"
+        if ("fornix" in l || "stria terminalis" in l) return "hippocampus"
+        if ("caudate" in l || "putamen" in l) return "caudate"
+        if ("accumbens" in l) return "nacc"
+        if ("thalam" in l) return "thalamus"
+        if ("hypothalam" in l || "pituitary" in l || "adenohypophysis" in l ||
+            "neurohypophysis" in l || "mamillary" in l
+        ) return "hypothalamus"
+        if ("substantia nigra" in l) return "sn"
+        if ("insula" in l && category == "cortex") return "insula"
+        // NOTE: `region` (e.g. "Frontal lobe") is deliberately unused: lobe-level
+        // granularity cannot identify one of the 16 coarse regions without guessing.
+        return null
+    }
+
     fun scenePos(regionId: String): Triple<Float, Float, Float> {
         val n = nodes.firstOrNull { it.regionId == regionId } ?: return Triple(0f, 0f, 0f)
         return toScene(n.mniX, n.mniY, n.mniZ)

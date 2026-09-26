@@ -1,0 +1,75 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: #0b0f17; color: #f8fafc;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+#scene { position: fixed; inset: 0; }
+#scene canvas { display: block; touch-action: none; }
+#loader {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(11, 15, 23, 0.94); z-index: 30; transition: opacity 0.4s ease;
+}
+#loader.done { opacity: 0; pointer-events: none; }
+.loader-box { width: min(320px, 80vw); text-align: center; }
+.loader-title { font-size: 15px; margin-bottom: 12px; }
+.loader-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; }
+#loadfill { height: 100%; width: 0%; background: #38bdf8; transition: width 0.2s ease; }
+.loader-msg { margin-top: 10px; font-size: 12px; color: #94a3b8; }
+.brand { position: fixed; top: 12px; left: 14px; z-index: 10; pointer-events: none;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7); }
+.brand h1 { margin: 0; font-size: 18px; }
+.brand h1 span { color: #38bdf8; font-weight: 400; }
+.brand p { margin: 2px 0 0; font-size: 11px; color: #94a3b8; }
+.panel {
+  position: fixed; top: 12px; right: 12px; z-index: 10; width: 208px;
+  max-height: calc(100% - 110px); overflow: auto;
+  background: rgba(17,24,39,0.85); border: 1px solid #334155; border-radius: 12px;
+  padding: 10px 12px; font-size: 13px; backdrop-filter: blur(8px);
+}
+.row { display: block; margin-bottom: 10px; }
+.search-row span { display: block; margin-bottom: 4px; }
+.search-row input {
+  width: 100%; background: rgba(255,255,255,0.07); color: #f8fafc;
+  border: 1px solid #334155; border-radius: 8px; padding: 6px 9px; font-size: 12px; outline: none;
+}
+.results { max-height: 150px; overflow: auto; margin: -4px 0 10px;
+  border: 1px solid #334155; border-radius: 8px; background: rgba(0,0,0,0.25); }
+.results button { display: block; width: 100%; text-align: left; border: none; border-radius: 0;
+  background: none; color: #f8fafc; padding: 6px 9px; font-size: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06); }
+.results .count { padding: 5px 9px; font-size: 11px; color: #94a3b8; }
+.slice-row > span { display: block; margin-bottom: 5px; }
+.seg { display: flex; gap: 4px; margin-bottom: 6px; }
+.seg button { flex: 1; padding: 5px 2px; font-size: 11px; opacity: 0.65;
+  background: rgba(255,255,255,0.08); color: #f8fafc; border: 1px solid #334155; border-radius: 8px; }
+.seg button.on { opacity: 1; border-color: #38bdf8; color: #38bdf8; }
+.slice-row input[type="range"] { width: 100%; accent-color: #38bdf8; }
+.slice-row input[type="range"]:disabled { opacity: 0.35; }
+.check-row { display: flex; align-items: center; gap: 8px; }
+.check-row input { accent-color: #38bdf8; }
+.cats summary { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #94a3b8; margin-bottom: 6px; }
+.cats label { display: flex; align-items: center; gap: 7px; padding: 2px 0; font-size: 12px; }
+.cats input { accent-color: #38bdf8; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.card {
+  position: fixed; left: 14px; bottom: 34px; z-index: 10;
+  width: min(320px, calc(100vw - 28px));
+  background: rgba(17,24,39,0.9); border: 1px solid #334155; border-radius: 12px;
+  padding: 12px 14px; backdrop-filter: blur(8px);
+}
+.card h2 { margin: 4px 0 2px; font-size: 16px; }
+.card .side { display: inline-block; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #38bdf8; border: 1px solid currentColor;
+  border-radius: 20px; padding: 1px 9px; }
+.card .meta { margin: 2px 0 8px; font-size: 12px; color: #94a3b8; }
+.ta2label { margin: 0; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #94a3b8; }
+.ta2, .func { margin: 3px 0 8px; font-size: 13px; line-height: 1.5; }
+.card .src { margin: 0 0 10px; font-size: 11px; color: #94a3b8; }
+.card button { background: rgba(255,255,255,0.08); color: #f8fafc;
+  border: 1px solid #334155; border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+.credit { position: fixed; bottom: 8px; left: 0; right: 0; z-index: 9; text-align: center;
+  font-size: 10px; color: #64748b; pointer-events: none; }

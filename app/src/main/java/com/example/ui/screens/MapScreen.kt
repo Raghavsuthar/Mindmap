@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.BrainAtlas3D
 import com.example.data.NeuroMapRepository
 import com.example.data.model.BrainRegion
 import com.example.data.model.Circuit
@@ -55,7 +56,9 @@ fun MapScreen(
     var selectedLayerFilter by remember { mutableStateOf<EntityLayer?>(null) }
     var selectedCircuitId by remember { mutableStateOf<String?>(initialCircuitId ?: "cstc_loop") }
     var selectedRegion by remember { mutableStateOf<BrainRegion?>(null) }
-    var is3D by remember { mutableStateOf(false) }
+    // 3D default ON: the viewer is now the offline sourced atlas (no CDN
+    // failure mode that previously motivated disabling it); 2D remains one tap away.
+    var is3D by remember { mutableStateOf(true) }
     var xray by remember { mutableStateOf(false) }
 
     // Zoom & pan transformations
@@ -243,6 +246,10 @@ fun MapScreen(
                     xray = xray,
                     onRegionTap = { regionId ->
                         selectedRegion = regions.find { it.id == regionId }
+                    },
+                    onStructureTap = { _, label, region, source, category ->
+                        val coarseId = BrainAtlas3D.mapToCoarseRegion(label, region, source, category)
+                        selectedRegion = coarseId?.let { id -> regions.find { it.id == id } }
                     },
                     modifier = Modifier.fillMaxSize()
                 )

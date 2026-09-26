@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>NeuroMap 3D Brain</title>
+<link rel="stylesheet" href="viewer.css"/>
+<script type="importmap">
+{"imports":{
+  "three": "./vendor/three.module.js",
+  "three/addons/": "./vendor/addons/"
+}}
+</script>
+</head>
+<body>
+<div id="scene"></div>
+
+<div id="loader"><div class="loader-box">
+  <div class="loader-title">Loading brain anatomy…</div>
+  <div class="loader-bar"><div id="loadfill"></div></div>
+  <div id="loadmsg" class="loader-msg">Starting</div>
+</div></div>
+
+<header class="brand"><h1>NeuroMap <span>3D Brain</span></h1><p id="stats">Loading…</p></header>
+
+<aside class="panel">
+  <label class="row search-row"><span>Search structures</span>
+    <input id="search" type="search" placeholder="e.g. thalamus, arcuate…" autocomplete="off"/>
+  </label>
+  <div id="results" class="results" hidden></div>
+  <div class="row slice-row"><span>Slice plane</span>
+    <div class="seg" role="group" aria-label="Slice plane orientation">
+      <button type="button" data-slice="off" class="on">Off</button>
+      <button type="button" data-slice="x">Sag</button>
+      <button type="button" data-slice="z">Cor</button>
+      <button type="button" data-slice="y">Axi</button>
+    </div>
+    <input id="slicePos" type="range" min="0" max="100" value="50" disabled/>
+  </div>
+  <label class="row check-row"><input id="labelToggle" type="checkbox"/> Labels</label>
+  <details class="cats" open><summary>Systems</summary><div id="catlist"></div></details>
+</aside>
+
+<section id="card" class="card" hidden>
+  <div id="cardSide" class="side"></div>
+  <h2 id="cardName"></h2>
+  <p id="cardMeta" class="meta"></p>
+  <p class="ta2label">TA2 anatomical path</p>
+  <p id="cardTa2" class="ta2"></p>
+  <p class="ta2label" id="funcLabel" hidden>Function</p>
+  <p id="cardFunc" class="func" hidden></p>
+  <p id="cardSrc" class="src"></p>
+  <button id="focusBtn" type="button">Focus camera</button>
+</section>
+
+<footer class="credit">Anatomy © Z-Anatomy · BodyParts3D / DBCLS (CC BY-SA 4.0) · educational only</footer>
+<script type="module" src="viewer.js"></script>
+</body>
+</html>

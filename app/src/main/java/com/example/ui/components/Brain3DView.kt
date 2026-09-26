@@ -15,14 +15,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.data.BrainAtlas3D
 
 /**
- * True 3D interactive brain (Three.js + OrbitControls bundled locally in WebView assets).
- * - Rotate / pinch-zoom / pan, tap node -> one-touch detail
- * - See-through translucent shell + X-ray mode
- * - 100% offline, zero network latency, zero CORS blocking
- * - Data from evidence-based NeuroMapRepository via [BrainAtlas3D]
+ * True 3D interactive brain: the real sourced Brain-Project model
+ * (437 TA2-named structures, Draco-compressed) rendered offline from
+ * app assets with Three.js in a WebView.
+ * - Rotate / pinch-zoom / pan, tap structure -> true atlas card
+ * - Search, labels, sagittal/coronal/axial slice planes
+ * - [xray] fades the cortical surface (see-through)
+ * - [onStructureTap] reports (manifestId, label, region, source, category);
+ *   the host maps it onto the coarse clinical model where an explicit
+ *   mapping exists, otherwise the in-viewer atlas card stands alone.
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -30,9 +33,12 @@ fun Brain3DView(
     activeCircuitId: String?,
     xray: Boolean,
     onRegionTap: (String) -> Unit,
+    onStructureTap: (manifestId: Int, label: String, region: String, source: String, category: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val payload = remember { BrainAtlas3D.toJsonPayload() }
+    // activeCircuitId is accepted for API stability; circuit emphasis is
+    // intentionally NOT painted onto true anatomy (no fabricated mapping).
+    remember(activeCircuitId) { activeCircuitId }
 
     AndroidView(
         modifier = modifier
@@ -44,33 +50,37 @@ fun Brain3DView(
                 settings.domStorageEnabled = true
                 settings.allowFileAccess = true
                 settings.allowContentAccess = true
-                @Suppress("DEPRECATION")
+                // Local file:// modules, model, manifest and Draco decoder.
                 settings.allowFileAccessFromFileURLs = true
-                @Suppress("DEPRECATION")
                 settings.allowUniversalAccessFromFileURLs = true
                 settings.mediaPlaybackRequiresUserGesture = false
-
                 setBackgroundColor(android.graphics.Color.parseColor("#0B0F17"))
-
                 addJavascriptInterface(object {
-                    @JavascriptInterface
-                    fun getPayload(): String {
-                        return payload
-                    }
-
                     @JavascriptInterface
                     fun onRegionTap(regionId: String) {
                         post { onRegionTap(regionId) }
                     }
-                }, "Android")
 
+                    @JavascriptInterface
+                    fun onStructureTap(
+                        manifestId: Int,
+                        label: String,
+                        region: String,
+                        source: String,
+                        category: String
+                    ) {
+                        post { onStructureTap(manifestId, label, region, source, category) }
+                    }
+                }, "Android")
                 webChromeClient = object : WebChromeClient() {
                     override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                        Log.d("Brain3D", "${consoleMessage?.message()} -- line ${consoleMessage?.lineNumber()} (${consoleMessage?.sourceId()})")
+                        Log.d(
+                            "Brain3D",
+                            "${consoleMessage?.message()} -- line ${consoleMessage?.lineNumber()}"
+                        )
                         return true
                     }
                 }
-
                 webViewClient = object : WebViewClient() {
                     override fun onReceivedError(
                         view: WebView?,
@@ -78,36 +88,17 @@ fun Brain3DView(
                         error: WebResourceError?
                     ) {
                         super.onReceivedError(view, request, error)
-                        Log.e("Brain3D", "WebView error: ${error?.description}")
-                    }
-
-                    override fun onPageFinished(view: WebView, url: String) {
-                        super.onPageFinished(view, url)
-                        // Trigger initialization and sync state
-                        view.evaluateJavascript(
-                            "if(window.initBrain && window.Android && window.Android.getPayload) { initBrain(JSON.parse(window.Android.getPayload())); }",
-                            null
-                        )
-                        view.evaluateJavascript(
-                            "if(window.setActiveCircuit) { window.setActiveCircuit(${if (activeCircuitId == null) "null" else "'$activeCircuitId'"}); }",
-                            null
-                        )
-                        view.evaluateJavascript(
-                            "if(window.setXray) { window.setXray(${if (xray) "true" else "false"}); }",
-                            null
-                        )
+                        Log.e("Brain3D", "WebView error: ${error?.description} @ ${request?.url}")
                     }
                 }
-
-                loadUrl("file:///android_asset/brain3d/brain3d.html")
+                loadUrl("file:///android_asset/brain3d/viewer.html")
             }
         },
         update = { web ->
             web.evaluateJavascript(
-                "if(window.setActiveCircuit) setActiveCircuit(${if (activeCircuitId == null) "null" else "'$activeCircuitId'"});",
+                "if(window.setCortexOpacity) setCortexOpacity(${if (xray) "0.08" else "1.0"});",
                 null
             )
-            web.evaluateJavascript("if(window.setXray) setXray(${if (xray) "true" else "false"});", null)
         }
     )
 }
