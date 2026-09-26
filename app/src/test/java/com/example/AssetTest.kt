@@ -25,6 +25,7 @@ class AssetTest {
         "https://appassets.androidplatform.net/assets/brain3d/viewer.html",
         "https://appassets.androidplatform.net/assets/brain3d/viewer.js",
         "https://appassets.androidplatform.net/assets/brain3d/models/brain.glb",
+        "https://appassets.androidplatform.net/assets/brain3d/models/brain-plain.glb",
         "https://appassets.androidplatform.net/assets/brain3d/models/manifest.json",
         "https://appassets.androidplatform.net/assets/brain3d/functions.json",
         "https://appassets.androidplatform.net/assets/brain3d/vendor/draco/draco_decoder.wasm"

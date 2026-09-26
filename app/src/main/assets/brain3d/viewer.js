@@ -7,6 +7,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 // Fully offline viewer: real sourced anatomy (Brain Project, CC BY-SA 4.0).
 // Runs from Android assets via file:// URLs — no network needed.
 const MODEL_URL = 'models/brain.glb';
+const PLAIN_URL = 'models/brain-plain.glb'; // decoder-free fallback (34 MB, same 437 structures)
 const MANIFEST_URL = 'models/manifest.json';
 const FUNCTIONS_URL = 'functions.json';
 const DRACO_PATH = 'vendor/draco/';
@@ -518,16 +519,75 @@ function wireUI() {
 }
 
 const manager = new THREE.LoadingManager();
+const loadErrors = [];
 manager.onProgress = (_url, loaded, total) => {
   if (total > 0) {
     const pct = Math.round((loaded / total) * 100);
     $('loadfill').style.width = `${pct}%`;
   }
 };
+// Record-only: the decoder ladder below retries other paths, so never
+// fail the whole load here. Failures surface in the final report.
 manager.onError = (url) => {
   console.error('Failed to load asset:', url);
-  fail('Resource loading', 'Failed to load: ' + url);
+  loadErrors.push(url);
 };
+
+function withTimeout(promise, ms, label) {
+  let t;
+  const timeout = new Promise((_, reject) => {
+    t = setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(t));
+}
+
+// Decoder ladder: WASM Draco -> asm.js Draco -> uncompressed fallback.
+// Each rung covers a different broken environment (no WASM, no workers,
+// incompatible decoder build). Errors accumulate for the final report.
+async function loadModelLadder() {
+  const failures = [];
+  // Rung 1: Draco with default (WASM) decoder.
+  try {
+    step = 'loading 3D model (Draco)';
+    $('loadmsg').textContent = 'Loading 3D model';
+    const draco = new DRACOLoader(manager);
+    draco.setDecoderPath(DRACO_PATH);
+    const loader = new GLTFLoader(manager);
+    loader.setDRACOLoader(draco);
+    const gltf = await withTimeout(loader.loadAsync(MODEL_URL), 90000, 'Draco model load');
+    draco.dispose();
+    return gltf;
+  } catch (e) {
+    failures.push('draco-wasm: ' + (e && e.message ? e.message : e));
+  }
+  // Rung 2: Draco with compatibility (asm.js) decoder, no WebAssembly needed.
+  try {
+    step = 'retrying with compatibility decoder';
+    $('loadmsg').textContent = 'Retrying with compatibility decoder…';
+    const draco = new DRACOLoader(manager);
+    draco.setDecoderPath(DRACO_PATH);
+    draco.setDecoderConfig({ type: 'js' });
+    const loader = new GLTFLoader(manager);
+    loader.setDRACOLoader(draco);
+    const gltf = await withTimeout(loader.loadAsync(MODEL_URL), 120000, 'Compat-decoder model load');
+    draco.dispose();
+    return gltf;
+  } catch (e) {
+    failures.push('draco-js: ' + (e && e.message ? e.message : e));
+  }
+  // Rung 3: uncompressed model, no decoder at all.
+  try {
+    step = 'loading uncompressed fallback';
+    $('loadmsg').textContent = 'Loading full-quality fallback (slower)…';
+    const loader = new GLTFLoader(manager);
+    const gltf = await withTimeout(loader.loadAsync(PLAIN_URL), 180000, 'Fallback model load');
+    return gltf;
+  } catch (e) {
+    failures.push('plain: ' + (e && e.message ? e.message : e));
+  }
+  const failedAssets = loadErrors.length ? ` Failed assets: ${[...new Set(loadErrors)].join(', ')}` : '';
+  throw new Error(failures.join(' | ') + '.' + failedAssets);
+}
 
 async function init() {
   let step = 'starting renderer';
@@ -564,14 +624,8 @@ async function init() {
     if (selected && !selected.visible) hideCard();
   });
 
-  $('loadmsg').textContent = 'Loading 3D model';
   step = 'loading 3D model';
-  const draco = new DRACOLoader(manager);
-  draco.setDecoderPath(DRACO_PATH);
-  const loader = new GLTFLoader(manager);
-  loader.setDRACOLoader(draco);
-
-  const gltf = await loader.loadAsync(MODEL_URL);
+  const gltf = await loadModelLadder();
   const model = gltf.scene;
 
   model.traverse((obj) => {
