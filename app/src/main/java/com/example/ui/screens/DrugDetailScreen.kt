@@ -28,6 +28,7 @@ import com.example.data.model.ReceptorTarget
 import com.example.ui.components.CrossLayerConnectionsSection
 import com.example.ui.components.LayerBadge
 import com.example.ui.components.SafetyNoticeBanner
+import com.example.ui.components.SourcesSection
 import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -185,6 +186,36 @@ fun DrugDetailScreen(
                 }
             }
 
+            // Evidence-based clinical summary
+            item {
+                if (drug.summary.isNotEmpty()) {
+                    Surface(
+                        color = colors.drugContainer.copy(alpha = 0.35f),
+                        border = BorderStroke(1.dp, colors.hairlineBorder),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "CLINICAL SUMMARY (EVIDENCE-BASED)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = DrugPrimary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = drug.summary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colors.textHigh,
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
+                }
+            }
+
             // Black-Box Warnings (if any)
             if (drug.blackBoxWarnings.isNotEmpty()) {
                 item {
@@ -219,7 +250,7 @@ fun DrugDetailScreen(
                                 Text(
                                     text = "• $warning",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFFFD2D2),
+                                    color = Color.White,
                                     lineHeight = 17.sp
                                 )
                             }
@@ -422,6 +453,10 @@ fun DrugDetailScreen(
                         )
                     }
                 }
+            }
+
+            item {
+                SourcesSection(sources = drug.sources)
             }
 
             item {

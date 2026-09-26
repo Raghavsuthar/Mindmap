@@ -271,7 +271,7 @@ object NeuroMapRepository {
             majorPathways = listOf("Dorsal raphe to Striatum (motor gating)", "Dorsal raphe to Neocortex (affect & cognition)", "Median raphe to Limbic system (anxiety/fear tone)", "Spinal projections (pain, sexual reflexes)"),
             linkedCircuits = listOf("frontolimbic_circuit", "cstc_loop", "default_mode_network", "hpa_axis"),
             linkedSyndromes = listOf("mdd", "gad", "ocd", "panic_disorder", "ptsd", "trd"),
-            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine", "mirtazapine", "buspirone", "aripiprazole", "clozapine", "olanzapine")
+            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine", "mirtazapine", "buspirone", "aripiprazole", "clozapine", "olanzapine", "clomipramine")
         ),
         Neurotransmitter(
             id = "dopamine",
@@ -364,7 +364,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "DMN hyperconnectivity causing unrelenting rumination; fronto-limbic hypoconnectivity (impaired DLPFC top-down suppression of limbic distress); monoaminergic depletion (5-HT/NE/DA) and neurotrophic BDNF deficit.",
             linkedCircuits = listOf("default_mode_network", "frontolimbic_circuit", "mesolimbic_pathway", "hpa_axis"),
             linkedTransmitters = listOf("serotonin", "norepinephrine", "dopamine", "glutamate"),
-            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine", "bupropion", "mirtazapine", "aripiprazole", "esketamine")
+            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine", "bupropion", "mirtazapine", "aripiprazole", "esketamine"),
+            summary = "Major depressive disorder is a syndrome of persistent low mood or loss of pleasure lasting at least two weeks, accompanied by changes in sleep, appetite, energy, concentration and self-worth, with suicide risk assessment essential at every contact. Current models implicate dysregulation across monoamine, glutamate and stress-axis systems together with hyperactivity of self-referential brain networks. First-line care combines an evidence-based antidepressant with structured psychotherapy, escalating to augmentation or neuromodulation when response is partial.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "bipolar1",
@@ -376,7 +378,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Impaired prefrontal-striatal gating; excessive intracellular secondary messenger signaling (PKC, IP3/DAG cascades); hyperactive mesolimbic dopamine driving grandiosity and impulsivity.",
             linkedCircuits = listOf("mesolimbic_pathway", "cstc_loop", "frontolimbic_circuit"),
             linkedTransmitters = listOf("dopamine", "glutamate", "gaba"),
-            linkedDrugs = listOf("lithium", "divalproex", "olanzapine", "quetiapine", "aripiprazole", "risperidone")
+            linkedDrugs = listOf("lithium", "divalproex", "olanzapine", "quetiapine", "aripiprazole", "risperidone"),
+            summary = "Bipolar I disorder is defined by at least one manic episode of abnormally elevated or irritable mood with increased energy, impulsivity and often psychosis, usually alternating with depressive episodes. Management separates acute-phase control from long-term relapse prevention, where lithium and several second-generation antipsychotics carry the strongest maintenance evidence. Because antidepressant monotherapy can precipitate mania, mood stabilisation is the backbone of pharmacotherapy.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("CANMAT guidelines", "https://www.canmat.org/"), Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "schizophrenia",
@@ -388,7 +392,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Mesolimbic hyperdopaminergia (D2 overstimulation mediating aberrant salience / hallucinations) coupled with mesocortical hypodopaminergia and NMDA hypofunction on cortical GABAergic interneurons.",
             linkedCircuits = listOf("mesolimbic_pathway", "mesocortical_pathway", "cstc_loop", "salience_network"),
             linkedTransmitters = listOf("dopamine", "glutamate", "gaba", "serotonin"),
-            linkedDrugs = listOf("risperidone", "olanzapine", "aripiprazole", "quetiapine", "clozapine")
+            linkedDrugs = listOf("risperidone", "olanzapine", "aripiprazole", "quetiapine", "clozapine"),
+            summary = "Schizophrenia is a chronic psychotic illness combining positive symptoms such as delusions and hallucinations with negative symptoms, disorganisation and cognitive impairment lasting six months or more. The prevailing model pairs mesolimbic dopamine overactivity with cortical glutamate-GABA dysregulation. All licensed antipsychotics dampen dopamine D2 signalling to varying degrees; clozapine is reserved for treatment resistance, and long-acting injectables address the adherence gap behind most relapses.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"), Source("APA DSM-5-TR overview", "https://www.psychiatry.org/psychiatrists/practice/dsm"))
         ),
         Syndrome(
             id = "gad",
@@ -400,7 +406,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Dysfunctional CSTC loop gating ('worry loop') and frontolimbic hypoconnectivity leading to uninhibited amygdalar fear output and central noradrenergic hyper-responsiveness.",
             linkedCircuits = listOf("cstc_loop", "frontolimbic_circuit", "salience_network"),
             linkedTransmitters = listOf("serotonin", "gaba", "norepinephrine"),
-            linkedDrugs = listOf("escitalopram", "sertraline", "venlafaxine", "buspirone", "clonazepam")
+            linkedDrugs = listOf("escitalopram", "sertraline", "venlafaxine", "buspirone", "clonazepam"),
+            summary = "Generalised anxiety disorder is excessive, hard-to-control worry across multiple domains for six months or more, with muscle tension, restlessness, fatigue and disturbed sleep. First-line pharmacotherapy uses SSRIs or SNRIs, with cognitive-behavioural therapy carrying equal long-term weight, while benzodiazepines stay short-term only because of dependence. Noradrenergic hyperarousal with impaired prefrontal inhibition of threat circuits is the core mechanistic target.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("CANMAT guidelines", "https://www.canmat.org/"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "panic_disorder",
@@ -412,7 +420,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Hypersensitive brainstem alarm system (locus coeruleus noradrenergic firing and parabrachial nucleus) triggered by faulty interoceptive signaling from anterior insula with inadequate ventromedial PFC suppression.",
             linkedCircuits = listOf("salience_network", "frontolimbic_circuit"),
             linkedTransmitters = listOf("norepinephrine", "serotonin", "gaba"),
-            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine", "clonazepam")
+            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine", "clonazepam"),
+            summary = "Panic disorder pairs recurrent unexpected panic attacks with persistent worry about further attacks and avoidance of triggering contexts. SSRIs are first-line drugs and exposure-based CBT the leading psychotherapy, while a hypersensitive brainstem alarm system driven by noradrenergic surges explains the abrupt autonomic storm. Treatment targets both attack prevention and the dismantling of anticipatory avoidance.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("CANMAT guidelines", "https://www.canmat.org/"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "ocd",
@@ -424,7 +434,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Hyperactivity in the direct pathway of the orbitofrontal-striatal-thalamic loop ('habit and error detection loop'), creating a persistent 'feeling of incompleteness' unquenched by motor action.",
             linkedCircuits = listOf("cstc_loop"),
             linkedTransmitters = listOf("serotonin", "dopamine", "glutamate"),
-            linkedDrugs = listOf("sertraline", "escitalopram", "aripiprazole", "risperidone")
+            linkedDrugs = listOf("sertraline", "escitalopram", "aripiprazole", "risperidone", "clomipramine"),
+            summary = "Obsessive-compulsive disorder combines intrusive unwanted thoughts or urges with repetitive rituals performed to neutralise distress, driven by hyperactivity in orbitofrontal-striatal-thalamic loops. High-dose SSRIs and clomipramine are the pharmacologic mainstays, and exposure with response prevention is the psychotherapy of choice. Dopamine-blocking augmentation helps the substantial minority with partial SSRI response, especially with comorbid tics.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "ptsd",
@@ -436,7 +448,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Failure of ventromedial PFC to exert top-down extinction of conditioned fear memories in the hyperactive amygdala, paired with hippocampal volume loss impairing contextual memory placement.",
             linkedCircuits = listOf("frontolimbic_circuit", "salience_network", "hpa_axis", "default_mode_network"),
             linkedTransmitters = listOf("norepinephrine", "serotonin", "glutamate", "gaba"),
-            linkedDrugs = listOf("sertraline", "venlafaxine", "mirtazapine", "quetiapine")
+            linkedDrugs = listOf("sertraline", "venlafaxine", "mirtazapine", "quetiapine"),
+            summary = "Post-traumatic stress disorder follows exposure to threatened death or serious injury with intrusive re-experiencing, avoidance, negative mood-cognition shifts and hyperarousal. Trauma-focused psychotherapies carry the strongest evidence; SSRIs and SNRIs are first-line drugs, with adrenergic strategies used for nightmares and hyperarousal. Failed prefrontal extinction of amygdala fear memory is the central circuit model.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WFSBP guidelines", "https://www.wfsbp.org"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "adhd",
@@ -448,7 +462,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Hypofunction of dopamine and norepinephrine signaling in the dorsolateral and orbitofrontal prefrontal cortex, leading to sub-optimal signal-to-noise ratio in executive attention networks.",
             linkedCircuits = listOf("mesocortical_pathway", "cstc_loop"),
             linkedTransmitters = listOf("dopamine", "norepinephrine"),
-            linkedDrugs = listOf("methylphenidate", "bupropion")
+            linkedDrugs = listOf("methylphenidate", "bupropion"),
+            summary = "Attention-deficit/hyperactivity disorder is a neurodevelopmental syndrome of persistent inattention or hyperactivity-impulsivity impairing function across settings from before age twelve. Stimulants that raise prefrontal dopamine and norepinephrine signalling are first-line, with atomoxetine, guanfacine and bupropion as alternatives. Management pairs medication with behavioural, academic and sleep-hygiene interventions.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"), Source("PubMed", "https://pubmed.ncbi.nlm.nih.gov/"))
         ),
         Syndrome(
             id = "bpd",
@@ -460,7 +476,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Marked frontolimbic hypoconnectivity (PFC-amygdala disconnection) coupled with altered endogenous opioid and serotonergic neurotransmission predisposing to intense abandonment panic and chronic affective instability.",
             linkedCircuits = listOf("frontolimbic_circuit", "default_mode_network"),
             linkedTransmitters = listOf("serotonin", "dopamine", "gaba"),
-            linkedDrugs = listOf("lamotrigine", "quetiapine", "aripiprazole", "sertraline")
+            linkedDrugs = listOf("lamotrigine", "quetiapine", "aripiprazole", "sertraline"),
+            summary = "Borderline personality disorder is a pervasive pattern of unstable relationships, self-image and affect with impulsivity and self-harm, rooted in frontolimbic disconnection and heightened rejection sensitivity. Structured psychotherapies such as dialectical behaviour therapy form the treatment backbone, as no drug is licensed specifically for the disorder. Mood stabilisers and second-generation antipsychotics are used adjunctively for affective instability and impulsivity.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "trd",
@@ -472,7 +490,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Chronic neuroinflammatory state, severe synaptic loss in medial PFC and hippocampus, persistent HPA axis dysregulation with loss of glucocorticoid receptor sensitivity, and glutamatergic signaling deficits.",
             linkedCircuits = listOf("default_mode_network", "hpa_axis", "frontolimbic_circuit"),
             linkedTransmitters = listOf("glutamate", "serotonin", "dopamine"),
-            linkedDrugs = listOf("esketamine", "aripiprazole", "quetiapine", "lithium", "olanzapine")
+            linkedDrugs = listOf("esketamine", "aripiprazole", "quetiapine", "lithium", "olanzapine", "clomipramine"),
+            summary = "Treatment-resistant depression denotes major depression failing at least two adequate antidepressant trials from different classes. Options with randomised support include dopamine-partial-agonist augmentation, lithium augmentation, esketamine, repetitive TMS, ECT and structured psychotherapy. Glutamatergic dysfunction, chronic stress-axis dysregulation and synaptic loss distinguish its biology from treatment-responsive depression.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "insomnia",
@@ -484,7 +504,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Hyperarousal across 24 hours mediated by overactivity of ascending reticular activating systems (histaminergic, noradrenergic, orexinergic) and deficient GABAergic anterior hypothalamic (VLPO) inhibition.",
             linkedCircuits = listOf("hpa_axis", "salience_network"),
             linkedTransmitters = listOf("gaba", "acetylcholine", "norepinephrine"),
-            linkedDrugs = listOf("mirtazapine", "quetiapine", "clonazepam")
+            linkedDrugs = listOf("mirtazapine", "quetiapine", "clonazepam"),
+            summary = "Insomnia disorder is dissatisfaction with sleep initiation, maintenance or quality despite adequate opportunity, with daytime impairment, driven by round-the-clock hyperarousal and deficient sleep-promoting inhibition. CBT for insomnia is first-line and outperforms drugs long-term; sedating antidepressants and short-course hypnotics are pharmacologic options. Treatment always starts with sleep restriction, stimulus control and circadian hygiene.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         ),
         Syndrome(
             id = "aud",
@@ -496,7 +518,9 @@ object NeuroMapRepository {
             primaryPathophysiologicalHallmark = "Initial acute positive reinforcement via GABA-A allosteric facilitation and mesolimbic dopamine surge, shifting in chronic dependence to allostatic neuroadaptation with NMDA receptor upregulation, down-regulated GABA, and excessive CRF.",
             linkedCircuits = listOf("mesolimbic_pathway", "frontolimbic_circuit"),
             linkedTransmitters = listOf("gaba", "glutamate", "dopamine"),
-            linkedDrugs = listOf("divalproex", "clonazepam")
+            linkedDrugs = listOf("divalproex", "clonazepam"),
+            summary = "Alcohol use disorder is a problematic pattern of drinking with tolerance, withdrawal, craving and loss of control, maintained by a shift from GABA-dopamine reward toward glutamate-driven dependence and stress sensitisation. Acamprosate, naltrexone and supervised disulfiram support abstinence alongside motivational and relapse-prevention therapies. Benzodiazepines manage withdrawal itself but are not maintenance treatment because of cross-dependence.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("Cochrane Library mental health collections", "https://www.cochranelibrary.com/collections"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
         )
     )
 
@@ -534,7 +558,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("mdd", "ocd", "panic_disorder", "ptsd", "gad"),
             linkedCircuits = listOf("frontolimbic_circuit", "cstc_loop", "default_mode_network"),
             linkedTransmitters = listOf("serotonin", "dopamine"),
-            clinicalPearls = "Sertraline's weak DAT inhibition makes it preferred for depression with psychomotor retardation and fatigue. It is the most extensively validated first-line SSRI in cardiac disease (SADHART trial)."
+            clinicalPearls = "Sertraline's weak DAT inhibition makes it preferred for depression with psychomotor retardation and fatigue. It is the most extensively validated first-line SSRI in cardiac disease (SADHART trial).",
+            summary = "Sertraline is a first-line SSRI distinguished by modest dopamine-transporter inhibition that gives it a relatively activating profile within its class. Beyond major depression it is established across OCD, panic disorder, PTSD, social anxiety and PMDD, with the strongest cardiac-safety dataset among SSRIs. Gastrointestinal upset, sexual dysfunction and early agitation are the characteristic tolerability issues.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "escitalopram",
@@ -568,7 +594,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("mdd", "gad", "panic_disorder", "ocd"),
             linkedCircuits = listOf("frontolimbic_circuit", "cstc_loop", "default_mode_network"),
             linkedTransmitters = listOf("serotonin"),
-            clinicalPearls = "The quintessential 'pure' SSRI with virtually no dopamine, norepinephrine, or anticholinergic off-target binding. Ideal first-line agent when polypharmacy and drug-drug interactions are primary concerns."
+            clinicalPearls = "The quintessential 'pure' SSRI with virtually no dopamine, norepinephrine, or anticholinergic off-target binding. Ideal first-line agent when polypharmacy and drug-drug interactions are primary concerns.",
+            summary = "Escitalopram is the purified S-enantiomer of citalopram and the most selective serotonin-reuptake inhibitor in routine use, giving it one of the cleanest drug-interaction profiles. It is a first-line option for depression and generalised anxiety, dosed once daily up to 20 mg. QT prolongation caps the dose in older adults and those with cardiac risk.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "venlafaxine",
@@ -602,7 +630,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("mdd", "gad", "panic_disorder", "ptsd", "trd"),
             linkedCircuits = listOf("default_mode_network", "frontolimbic_circuit", "salience_network"),
             linkedTransmitters = listOf("serotonin", "norepinephrine"),
-            clinicalPearls = "At low doses (<=75 mg), venlafaxine is essentially an SSRI; true dual-mechanism noradrenergic recruitment occurs above 150 mg/day. Prominent risk of severe 'electric shock' withdrawal sensations if doses are skipped."
+            clinicalPearls = "At low doses (<=75 mg), venlafaxine is essentially an SSRI; true dual-mechanism noradrenergic recruitment occurs above 150 mg/day. Prominent risk of severe 'electric shock' withdrawal sensations if doses are skipped.",
+            summary = "Venlafaxine is an SNRI that behaves as an SSRI at low doses and recruits norepinephrine reuptake blockade above roughly 150 mg daily. It covers depression, generalised anxiety, panic and social anxiety but demands blood-pressure monitoring and a slow taper because of prominent discontinuation symptoms. Its short half-life makes missed doses symptomatic within a day.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "bupropion",
@@ -636,7 +666,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("mdd", "adhd", "trd"),
             linkedCircuits = listOf("mesolimbic_pathway", "mesocortical_pathway"),
             linkedTransmitters = listOf("dopamine", "norepinephrine"),
-            clinicalPearls = "Zero sexual dysfunction and zero weight gain (often induces weight loss). First-line choice in depression with apathy, hypersomnia, or concurrent ADHD. Absolute contraindication in eating disorders due to seizure risk."
+            clinicalPearls = "Zero sexual dysfunction and zero weight gain (often induces weight loss). First-line choice in depression with apathy, hypersomnia, or concurrent ADHD. Absolute contraindication in eating disorders due to seizure risk.",
+            summary = "Bupropion is a norepinephrine-dopamine reuptake inhibitor with no sexual side effects and no weight gain, often activating and modestly aiding smoking cessation. It suits depression with fatigue, hypersomnia or attentional features but is strictly contraindicated in eating disorders, seizure history and abrupt alcohol or benzodiazepine withdrawal because it lowers the seizure threshold.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "mirtazapine",
@@ -672,7 +704,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("mdd", "insomnia", "ptsd", "trd"),
             linkedCircuits = listOf("default_mode_network", "hpa_axis", "frontolimbic_circuit"),
             linkedTransmitters = listOf("norepinephrine", "serotonin"),
-            clinicalPearls = "A powerful tool for depressed patients with insomnia and cachexia/weight loss (e.g. oncology, elderly). Combines synergistically with Venlafaxine ('California Rocket Fuel') to maximally drive dual NE/5-HT transmission."
+            clinicalPearls = "A powerful tool for depressed patients with insomnia and cachexia/weight loss (e.g. oncology, elderly). Combines synergistically with Venlafaxine ('California Rocket Fuel') to maximally drive dual NE/5-HT transmission.",
+            summary = "Mirtazapine boosts noradrenergic and serotonergic transmission by blocking alpha-2 autoreceptors while antagonising 5-HT2, 5-HT3 and H1 receptors, which explains its anti-nausea effect and sedation. It is the antidepressant of choice when depression presents with insomnia and weight loss, taken at bedtime. Higher doses paradoxically sedate less as noradrenergic drive rises.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "aripiprazole",
@@ -708,7 +742,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("schizophrenia", "bipolar1", "mdd", "trd", "ocd", "bpd"),
             linkedCircuits = listOf("mesolimbic_pathway", "mesocortical_pathway", "cstc_loop"),
             linkedTransmitters = listOf("dopamine", "serotonin"),
-            clinicalPearls = "The 'dopamine stabilizer': partial agonism avoids total D2 shutdown, preserving prolactin and reducing metabolic liability. Low doses (2-5 mg) are gold-standard for antidepressant augmentation in TRD."
+            clinicalPearls = "The 'dopamine stabilizer': partial agonism avoids total D2 shutdown, preserving prolactin and reducing metabolic liability. Low doses (2-5 mg) are gold-standard for antidepressant augmentation in TRD.",
+            summary = "Aripiprazole is a D2 partial agonist that dampens dopamine where it is excessive and supports it where deficient, giving antipsychotic efficacy with comparatively low metabolic and prolactin burden. It is used in schizophrenia, bipolar mania, and as augmentation in resistant depression and OCD. Akathisia and impulse-control symptoms are the signature tolerability signals to monitor.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "quetiapine",
@@ -744,7 +780,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("bipolar1", "schizophrenia", "mdd", "trd", "ptsd", "insomnia"),
             linkedCircuits = listOf("mesolimbic_pathway", "salience_network", "default_mode_network"),
             linkedTransmitters = listOf("dopamine", "serotonin", "norepinephrine"),
-            clinicalPearls = "A dose-dependent 'chameleon': 25-50 mg = sleeping pill (pure H1); 150-300 mg = antidepressant (norquetiapine NET + 5-HT2A); 600-800 mg = antipsychotic (D2 threshold reached). Negligible EPS or hyperprolactinemia risk."
+            clinicalPearls = "A dose-dependent 'chameleon': 25-50 mg = sleeping pill (pure H1); 150-300 mg = antidepressant (norquetiapine NET + 5-HT2A); 600-800 mg = antipsychotic (D2 threshold reached). Negligible EPS or hyperprolactinemia risk.",
+            summary = "Quetiapine is a sedating second-generation antipsychotic used across schizophrenia, bipolar depression and mania, and adjunctively in resistant depression, with dose-dependent receptor engagement from histamine blockade at low doses to full D2 antagonism at high doses. Somnolence, dry mouth, weight gain and orthostatic hypotension are typical. Its broad dose range makes indication-specific dosing essential.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "olanzapine",
@@ -780,7 +818,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("schizophrenia", "bipolar1", "trd", "mdd"),
             linkedCircuits = listOf("mesolimbic_pathway", "mesocortical_pathway", "cstc_loop"),
             linkedTransmitters = listOf("dopamine", "serotonin", "acetylcholine"),
-            clinicalPearls = "One of the most effective non-clozapine antipsychotics and antimanic agents in psychiatry (CATIE trial). However, devastating metabolic adverse effects necessitate aggressive baseline and ongoing laboratory monitoring."
+            clinicalPearls = "One of the most effective non-clozapine antipsychotics and antimanic agents in psychiatry (CATIE trial). However, devastating metabolic adverse effects necessitate aggressive baseline and ongoing laboratory monitoring.",
+            summary = "Olanzapine is a broad-spectrum second-generation antipsychotic with strong efficacy in schizophrenia and bipolar disorder, including rapid control of agitation. Its use is limited mainly by substantial weight gain and metabolic syndrome, mandating baseline and ongoing metabolic monitoring. Potent H1 and 5-HT2C blockade underlie both its calming effect and its metabolic liability.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "risperidone",
@@ -816,7 +856,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("schizophrenia", "bipolar1", "ocd"),
             linkedCircuits = listOf("mesolimbic_pathway", "cstc_loop"),
             linkedTransmitters = listOf("dopamine", "serotonin"),
-            clinicalPearls = "The quintessential serotonin-dopamine antagonist (SDA). Be careful not to dose like a typical antipsychotic: 2-4 mg is the sweet spot. Highest incidence of prolactin elevation among all SGAs."
+            clinicalPearls = "The quintessential serotonin-dopamine antagonist (SDA). Be careful not to dose like a typical antipsychotic: 2-4 mg is the sweet spot. Highest incidence of prolactin elevation among all SGAs.",
+            summary = "Risperidone is a potent D2 and 5-HT2A antagonist effective in schizophrenia, bipolar mania and irritability in autism, available in long-acting injectable form. Dose-dependent prolactin elevation, weight gain and extrapyramidal symptoms track its high D2 occupancy. It remains a benchmark comparator in antipsychotic trials.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "clozapine",
@@ -854,7 +896,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("schizophrenia", "bipolar1", "trd"),
             linkedCircuits = listOf("mesolimbic_pathway", "mesocortical_pathway"),
             linkedTransmitters = listOf("dopamine", "serotonin", "acetylcholine"),
-            clinicalPearls = "The single most effective antipsychotic in existence; the only drug FDA-approved for treatment-resistant schizophrenia and reducing suicide in schizophrenia. Never given first-line due to agranulocytosis monitoring mandates."
+            clinicalPearls = "The single most effective antipsychotic in existence; the only drug FDA-approved for treatment-resistant schizophrenia and reducing suicide in schizophrenia. Never given first-line due to agranulocytosis monitoring mandates.",
+            summary = "Clozapine is the only antipsychotic with proven superiority in treatment-resistant schizophrenia and in reducing suicidality, acting through uniquely broad receptor binding with relatively low D2 occupancy. Mandatory blood monitoring manages the agranulocytosis risk, alongside vigilance for myocarditis, seizures and severe constipation. Its benefits outweigh burdens only where two prior antipsychotics have failed.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "lithium",
@@ -889,7 +933,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("bipolar1", "mdd", "trd"),
             linkedCircuits = listOf("mesolimbic_pathway", "frontolimbic_circuit", "hpa_axis"),
             linkedTransmitters = listOf("glutamate", "dopamine"),
-            clinicalPearls = "The benchmark mood stabilizer for Bipolar I disorder with proven anti-suicidal properties independent of mood state. Always check levels exactly 12 hours post-dose (trough level)."
+            clinicalPearls = "The benchmark mood stabilizer for Bipolar I disorder with proven anti-suicidal properties independent of mood state. Always check levels exactly 12 hours post-dose (trough level).",
+            summary = "Lithium remains the gold-standard mood stabiliser for bipolar prophylaxis, with unique anti-suicidal effects, acting through inositol and GSK-3 signalling rather than a single receptor. Its narrow therapeutic index demands serum monitoring and attention to renal, thyroid and hydration status. Even low-dose augmentation benefits resistant depression.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("CANMAT guidelines", "https://www.canmat.org/"), Source("DrugBank", "https://go.drugbank.com/"))
         ),
         Drug(
             id = "lamotrigine",
@@ -923,7 +969,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("bipolar1", "bpd", "mdd", "trd"),
             linkedCircuits = listOf("frontolimbic_circuit", "cstc_loop"),
             linkedTransmitters = listOf("glutamate", "gaba"),
-            clinicalPearls = "First-line for preventing Bipolar depression and rapid cycling without triggering manic switches. Excellent tolerability (weight neutral, non-sedating), but slow 6-week titration is non-negotiable."
+            clinicalPearls = "First-line for preventing Bipolar depression and rapid cycling without triggering manic switches. Excellent tolerability (weight neutral, non-sedating), but slow 6-week titration is non-negotiable.",
+            summary = "Lamotrigine is a glutamate-release inhibitor most valuable for preventing bipolar depressive relapse rather than treating acute mania. A slow six-week titration is mandatory to limit rash risk, after which tolerability is among the best in class. Valproate doubles its levels while enzyme inducers halve them.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("CANMAT guidelines", "https://www.canmat.org/"), Source("DrugBank", "https://go.drugbank.com/"))
         ),
         Drug(
             id = "divalproex",
@@ -958,7 +1006,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("bipolar1", "aud"),
             linkedCircuits = listOf("cstc_loop", "frontolimbic_circuit"),
             linkedTransmitters = listOf("gaba", "glutamate"),
-            clinicalPearls = "Gold standard for acute manic excitement, mixed episodes, and rapid cycling. Oral loading (20 mg/kg) controls acute mania faster than lithium. Strongly avoid in females of childbearing age due to severe teratogenicity and PCOS risk."
+            clinicalPearls = "Gold standard for acute manic excitement, mixed episodes, and rapid cycling. Oral loading (20 mg/kg) controls acute mania faster than lithium. Strongly avoid in females of childbearing age due to severe teratogenicity and PCOS risk.",
+            summary = "Divalproex (valproate) controls acute mania and mixed states through GABA potentiation and histone-deacetylase effects, with loading-dose strategies for rapid stabilisation. Teratogenicity rules it out in pregnancy, and hepatic, haematologic and weight monitoring is routine. It is also a first-line migraine prophylactic.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "clonazepam",
@@ -990,7 +1040,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("panic_disorder", "gad", "insomnia", "bipolar1"),
             linkedCircuits = listOf("frontolimbic_circuit", "salience_network"),
             linkedTransmitters = listOf("gaba"),
-            clinicalPearls = "Long half-life (30-40h) makes it superior to Alprazolam (Xanax) by avoiding inter-dose rebound anxiety and intense addictive peaks. Excellent 2-4 week bridge while awaiting SSRI onset."
+            clinicalPearls = "Long half-life (30-40h) makes it superior to Alprazolam (Xanax) by avoiding inter-dose rebound anxiety and intense addictive peaks. Excellent 2-4 week bridge while awaiting SSRI onset.",
+            summary = "Clonazepam is a long-acting benzodiazepine that rapidly damps panic, acute mania-related agitation and catatonia via GABA-A potentiation. Dependence, withdrawal seizures and cognitive dulling restrict it to short-term or carefully supervised maintenance use with a taper plan. It is not a substitute for definitive SSRI or mood-stabiliser therapy.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "buspirone",
@@ -1024,7 +1076,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("gad", "mdd"),
             linkedCircuits = listOf("frontolimbic_circuit"),
             linkedTransmitters = listOf("serotonin", "dopamine"),
-            clinicalPearls = "Not a PRN anxiolytic: must be taken scheduled BID/TID. Ineffective for acute panic attacks. Excellent non-addictive maintenance option for GAD and augmenting SSRIs to alleviate SSRI-induced sexual dysfunction."
+            clinicalPearls = "Not a PRN anxiolytic: must be taken scheduled BID/TID. Ineffective for acute panic attacks. Excellent non-addictive maintenance option for GAD and augmenting SSRIs to alleviate SSRI-induced sexual dysfunction.",
+            summary = "Buspirone is a 5-HT1A partial agonist for generalised anxiety that avoids the sedation, dependence and withdrawal of benzodiazepines. Its one-to-two-week onset lag and twice-daily dosing require expectation-setting, and it works best in benzodiazepine-naive patients. It also modestly augments SSRIs in resistant depression.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "methylphenidate",
@@ -1058,7 +1112,9 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("adhd", "mdd"),
             linkedCircuits = listOf("mesocortical_pathway", "cstc_loop"),
             linkedTransmitters = listOf("dopamine", "norepinephrine"),
-            clinicalPearls = "Unlike amphetamines (which reverse DAT/VMAT2 to dump dopamine), methylphenidate is a pure reuptake blocker, making it less prone to neurotoxic vesicular depletion and tachycardia."
+            clinicalPearls = "Unlike amphetamines (which reverse DAT/VMAT2 to dump dopamine), methylphenidate is a pure reuptake blocker, making it less prone to neurotoxic vesicular depletion and tachycardia.",
+            summary = "Methylphenidate blocks dopamine and norepinephrine reuptake, making it first-line for ADHD across ages in immediate- and extended-release forms. Appetite suppression, insomnia and small blood-pressure rises are the routine monitoring points, with misuse liability managed through supervised prescribing. Cardiovascular screening precedes initiation.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
         Drug(
             id = "esketamine",
@@ -1093,8 +1149,49 @@ object NeuroMapRepository {
             linkedSyndromes = listOf("trd", "mdd"),
             linkedCircuits = listOf("default_mode_network", "hpa_axis", "frontolimbic_circuit"),
             linkedTransmitters = listOf("glutamate"),
-            clinicalPearls = "The first fundamentally novel mechanism antidepressant in 50 years. Generates rapid synaptogenesis and eliminates acute suicidal ideation within hours, contrasting with the 4-6 week lag of monoaminergic drugs."
-        )
+            clinicalPearls = "The first fundamentally novel mechanism antidepressant in 50 years. Generates rapid synaptogenesis and eliminates acute suicidal ideation within hours, contrasting with the 4-6 week lag of monoaminergic drugs.",
+            summary = "Esketamine nasal spray is an NMDA antagonist producing rapid improvement in treatment-resistant depression through glutamate-driven synaptic plasticity. Administration is restricted to supervised settings with post-dose monitoring for dissociation and blood-pressure spikes. It complements rather than replaces ongoing oral antidepressants.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("DrugBank", "https://go.drugbank.com/"))
+        ),
+        Drug(
+            id = "clomipramine",
+            genericName = "Clomipramine",
+            brandName = "Anafranil",
+            drugClass = "Tricyclic Antidepressant (TCA)",
+            atcCode = "N06AA04",
+            receptorTargets = listOf(
+                ReceptorTarget("SERT (5-HTT)", "Inhibitor", null, "High", "Most potent serotonin-reuptake blockade among TCAs; basis of the anti-obsessional effect"),
+                ReceptorTarget("NET", "Inhibitor", null, "Moderate", "Norepinephrine reuptake blockade via parent drug and active desmethyl metabolite"),
+                ReceptorTarget("M1 Muscarinic", "Antagonist", null, "High", "Dry mouth, constipation, urinary retention, blurred vision and cognitive dulling"),
+                ReceptorTarget("H1 Histamine", "Antagonist", null, "High", "Sedation and weight gain"),
+                ReceptorTarget("Alpha-1 Adrenergic", "Antagonist", null, "Moderate", "Orthostatic hypotension and reflex tachycardia")
+            ),
+            pharmacokinetics = Pharmacokinetics(
+                halfLife = "20-40 hours (active desmethyl metabolite longer)",
+                bioavailability = "About 50% (extensive first-pass metabolism)",
+                cypMetabolism = "CYP2D6 and CYP2C19 substrate; poor metabolisers accumulate parent drug",
+                timeToPeak = "2 to 6 hours"
+            ),
+            dosingRange = DosingRange(
+                startingDose = "25 mg/day (usually at bedtime)",
+                targetDose = "100-150 mg/day",
+                maxDose = "250 mg/day in OCD with plasma monitoring",
+                titrationSchedule = "Start 25 mg daily; increase by 25 mg every few days as tolerated. ECG and postural vitals in older adults."
+            ),
+            commonSideEffects = listOf("Anticholinergic effects (dry mouth, constipation, blurred vision)", "Sedation and fatigue", "Weight gain", "Orthostatic hypotension", "QT prolongation", "Sweating and tremor"),
+            sideEffectMechanisms = listOf(
+                SideEffectMechanism("Anticholinergic cluster", "M1 muscarinic antagonism", "Dose reduction, divided dosing; avoid in urinary retention, glaucoma, ileus"),
+                SideEffectMechanism("Orthostatic hypotension", "Alpha-1 adrenergic blockade", "Bedtime dosing, hydration, slow posture changes"),
+                SideEffectMechanism("Cardiac conduction slowing", "Cardiac sodium-channel blockade in overdose", "Baseline ECG; treat any overdose as a medical emergency")
+            ),
+            blackBoxWarnings = listOf("Suicidality in children, adolescents and young adults during early treatment.", "Lethal in overdose: narrow therapeutic index; limit quantities in suicidal patients."),
+            linkedSyndromes = listOf("ocd", "mdd", "panic_disorder", "trd"),
+            linkedCircuits = listOf("cstc_loop", "frontolimbic_circuit"),
+            linkedTransmitters = listOf("serotonin", "norepinephrine"),
+            clinicalPearls = "The most serotonergic tricyclic and a benchmark anti-obsessional; reserved for SSRI-resistant OCD and selected melancholic depressions because anticholinergic, cardiac and overdose toxicity demand respect.",
+            summary = "Clomipramine is a tricyclic antidepressant and the most potent serotonin-reuptake blocker of its class, making it a reference treatment for obsessive-compulsive disorder after SSRI trials. Its broad receptor binding brings anticholinergic, sedative, hypotensive and pro-arrhythmic effects that require ECG and tolerability monitoring. A narrow therapeutic index and lethality in overdose mean quantities are limited in patients with suicidal ideation.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
+        ),
     )
 
     fun searchAll(query: String, filterLayer: EntityLayer?): List<SearchResult> {

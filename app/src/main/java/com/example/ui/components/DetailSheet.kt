@@ -2,6 +2,7 @@ package com.example.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +40,6 @@ fun EntityDetailBottomSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val colors = LocalLayerColors.current
-
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -336,6 +337,7 @@ fun SyndromeDetailContent(
     onEntityClick: (id: String, layer: EntityLayer) -> Unit
 ) {
     val colors = LocalLayerColors.current
+    val uriHandler = LocalUriHandler.current
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -348,10 +350,11 @@ fun SyndromeDetailContent(
                     Surface(
                         color = colors.syndromeContainer,
                         border = BorderStroke(1.dp, colors.syndromeBorder),
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.clickable { uriHandler.openUri(ICD11_BROWSER_URL) }
                     ) {
                         Text(
-                            text = "ICD-11: ${syn.icd11Code}",
+                            text = "ICD-11: ${syn.icd11Code} ↗",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.5.sp
@@ -369,9 +372,10 @@ fun SyndromeDetailContent(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "DSM-5 Diagnostic Code: ${syn.dsm5Code}",
+                    text = "DSM-5 Diagnostic Code: ${syn.dsm5Code} ↗",
                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                    color = colors.textSecondary
+                    color = colors.textSecondary,
+                    modifier = Modifier.clickable { uriHandler.openUri(DSM_OVERVIEW_URL) }
                 )
             }
             IconButton(
@@ -409,6 +413,31 @@ fun SyndromeDetailContent(
             }
         }
 
+        // Evidence-based clinical summary
+        if (syn.summary.isNotEmpty()) {
+            Surface(
+                color = colors.syndromeContainer.copy(alpha = 0.25f),
+                border = BorderStroke(1.dp, colors.hairlineBorder),
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = "CLINICAL SUMMARY (EVIDENCE-BASED)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SyndromePrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = syn.summary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.textHigh,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+        }
+
         // Pathophysiological hallmark
         Surface(
             color = colors.syndromeContainer.copy(alpha = 0.35f),
@@ -439,6 +468,8 @@ fun SyndromeDetailContent(
             linkedDrugs = syn.linkedDrugs,
             onEntityClick = onEntityClick
         )
+
+        SourcesSection(sources = syn.sources)
     }
 }
 
@@ -581,5 +612,7 @@ fun DrugDetailQuickContent(
             linkedSyndromes = drug.linkedSyndromes,
             onEntityClick = onEntityClick
         )
+
+        SourcesSection(sources = drug.sources)
     }
 }

@@ -53,7 +53,14 @@ data class Syndrome(
     val primaryPathophysiologicalHallmark: String,
     val linkedCircuits: List<String>,
     val linkedTransmitters: List<String>,
-    val linkedDrugs: List<String>
+    val linkedDrugs: List<String>,
+    val summary: String = "",
+    val sources: List<Source> = emptyList()
+)
+
+data class Source(
+    val name: String,
+    val url: String
 )
 
 data class Drug(
@@ -71,7 +78,9 @@ data class Drug(
     val linkedSyndromes: List<String>,
     val linkedCircuits: List<String>,
     val linkedTransmitters: List<String>,
-    val clinicalPearls: String
+    val clinicalPearls: String,
+    val summary: String = "",
+    val sources: List<Source> = emptyList()
 )
 
 data class ReceptorTarget(
