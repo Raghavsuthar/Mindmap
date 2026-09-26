@@ -48,35 +48,58 @@ function fail(step, msg) {
 }
 $('retryBtn').addEventListener('click', () => window.location.reload());
 window.addEventListener('error', (e) => {
+  console.error(e);
   if (!$('loader').classList.contains('done')) fail('Error: ' + (e.message || 'failed to start'));
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled rejection:', e.reason);
+  if (!$('loader').classList.contains('done')) {
+    fail('Async load', e.reason && e.reason.message ? e.reason.message : String(e.reason));
+  }
 });
 
 const container = $('scene');
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.localClippingEnabled = true;
-container.appendChild(renderer.domElement);
+let renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({
+    antialias: false,
+    alpha: true,
+    powerPreference: 'low-power',
+    failIfMajorPerformanceCaveat: false
+  });
+} catch (e1) {
+  try {
+    renderer = new THREE.WebGLRenderer({ alpha: true });
+  } catch (e2) {
+    fail('WebGL', 'WebGL not supported: ' + (e2.message || e1.message));
+  }
+}
+
+if (renderer) {
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.localClippingEnabled = true;
+  container.appendChild(renderer.domElement);
+}
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.01, 100);
 camera.position.set(0.35, 0.22, 0.62);
 
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+if (renderer) {
+  try {
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  } catch (err) {
+    console.warn('RoomEnvironment PMREM not supported in this context, fallback to lights', err);
+  }
+}
 
 scene.add(new THREE.HemisphereLight(0xfff1e6, 0x232b34, 0.55));
 const key = new THREE.DirectionalLight(0xfff4ea, 1.6);
 key.position.set(0.6, 0.9, 0.7);
-key.castShadow = true;
-key.shadow.mapSize.set(1024, 1024);
-key.shadow.camera.near = 0.01;
-key.shadow.camera.far = 5;
-key.shadow.bias = -0.0002;
 scene.add(key);
 const fill = new THREE.DirectionalLight(0xdfe8ff, 0.45);
 fill.position.set(-0.7, 0.1, 0.5);
@@ -85,24 +108,24 @@ const rim = new THREE.DirectionalLight(0xffe2d2, 0.9);
 rim.position.set(-0.2, 0.4, -0.8);
 scene.add(rim);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 0.7;
-controls.minDistance = 0.05;
-controls.maxDistance = 3;
+const controls = (renderer && renderer.domElement) ? new OrbitControls(camera, renderer.domElement) : null;
+if (controls) {
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.7;
+  controls.minDistance = 0.05;
+  controls.maxDistance = 3;
 
-let spinWanted = true;
-let idleTimer = null;
-controls.addEventListener('start', () => {
-  controls.autoRotate = false;
-  if (idleTimer) clearTimeout(idleTimer);
-});
-controls.addEventListener('end', () => {
-  if (idleTimer) clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => { if (spinWanted) controls.autoRotate = true; }, 5000);
-});
+  controls.addEventListener('start', () => {
+    controls.autoRotate = false;
+    if (idleTimer) clearTimeout(idleTimer);
+  });
+  controls.addEventListener('end', () => {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { if (spinWanted) controls.autoRotate = true; }, 5000);
+  });
+}
 
 function tissueMaterial(cat) {
   const style = CATEGORY_STYLE[cat] || { color: 0xb9a89c, roughness: 0.5 };
@@ -251,17 +274,20 @@ function pickAt(cx, cy) {
   const hits = raycaster.intersectObjects(anatomyMeshes.filter((m) => m.visible), false);
   return hits.length ? hits[0].object : null;
 }
-renderer.domElement.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
-renderer.domElement.addEventListener('pointerup', (e) => {
-  if (Math.hypot(e.clientX - downX, e.clientY - downY) > 8) return;
-  select(pickAt(e.clientX, e.clientY));
-});
-renderer.domElement.addEventListener('pointermove', (e) => {
-  if (e.pointerType === 'touch' || e.buttons !== 0) return;
-  setHovered(pickAt(e.clientX, e.clientY));
-});
+if (renderer && renderer.domElement) {
+  renderer.domElement.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
+  renderer.domElement.addEventListener('pointerup', (e) => {
+    if (Math.hypot(e.clientX - downX, e.clientY - downY) > 8) return;
+    select(pickAt(e.clientX, e.clientY));
+  });
+  renderer.domElement.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch' || e.buttons !== 0) return;
+    setHovered(pickAt(e.clientX, e.clientY));
+  });
+}
 
 function focusOn(mesh) {
+  if (!controls) return;
   controls.target.copy(new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3()));
 }
 
@@ -493,7 +519,14 @@ function wireUI() {
 
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_url, loaded, total) => {
-  $('loadfill').style.width = `${Math.round((loaded / total) * 100)}%`;
+  if (total > 0) {
+    const pct = Math.round((loaded / total) * 100);
+    $('loadfill').style.width = `${pct}%`;
+  }
+};
+manager.onError = (url) => {
+  console.error('Failed to load asset:', url);
+  fail('Resource loading', 'Failed to load: ' + url);
 };
 
 async function init() {
@@ -624,10 +657,12 @@ init();
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  if (renderer) renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-renderer.setAnimationLoop(() => {
-  controls.update();
-  renderer.render(scene, camera);
-});
+if (renderer) {
+  renderer.setAnimationLoop(() => {
+    if (controls) controls.update();
+    renderer.render(scene, camera);
+  });
+}

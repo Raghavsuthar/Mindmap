@@ -5,8 +5,8 @@ import android.util.Log
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 
@@ -23,10 +24,9 @@ import androidx.webkit.WebViewClientCompat
  * app assets with Three.js in a WebView.
  *
  * Assets are served through [WebViewAssetLoader] over a same-origin
- * https://appassets.androidx.webkit/ URL. file:// URLs are deliberately
+ * https://appassets.androidplatform.net/ URL. file:// URLs are deliberately
  * avoided: ES modules, fetch() and the Draco Web Worker are all blocked
- * or unreliable off file:// on many devices, which surfaced as a
- * never-loading model.
+ * or unreliable off file:// on many devices.
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -86,18 +86,20 @@ fun Brain3DView(
                     override fun shouldInterceptRequest(
                         view: WebView,
                         request: WebResourceRequest
-                    ) = assetLoader.shouldInterceptRequest(request.url)
+                    ): WebResourceResponse? {
+                        return assetLoader.shouldInterceptRequest(request.url)
+                    }
 
                     override fun onReceivedError(
-                        view: WebView?,
-                        request: WebResourceRequest?,
-                        error: WebResourceError?
+                        view: WebView,
+                        request: WebResourceRequest,
+                        error: WebResourceErrorCompat
                     ) {
                         super.onReceivedError(view, request, error)
-                        Log.e("Brain3D", "WebView error: ${error?.description} @ ${request?.url}")
+                        Log.e("Brain3D", "WebView error: ${error.description} @ ${request.url}")
                     }
                 }
-                loadUrl("https://appassets.androidx.webkit/assets/brain3d/viewer.html")
+                loadUrl("https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/brain3d/viewer.html")
             }
         },
         update = { web ->
