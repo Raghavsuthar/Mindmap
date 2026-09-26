@@ -29,6 +29,17 @@
     <input id="search" type="search" placeholder="e.g. thalamus, arcuate…" autocomplete="off"/>
   </label>
   <div id="results" class="results" hidden></div>
+  <div class="row slice-row"><span>Hemisphere</span>
+    <div class="seg" role="group" aria-label="Hemisphere">
+      <button type="button" data-hemi="both" class="on">Both</button>
+      <button type="button" data-hemi="left">Left</button>
+      <button type="button" data-hemi="right">Right</button>
+    </div>
+  </div>
+  <div class="row btn-row">
+    <button id="deepBtn" type="button" title="Show deep nuclei, tracts and vessels only">Deep only</button>
+    <button id="resetFiltersBtn" type="button" title="Restore all systems and views">Reset all</button>
+  </div>
   <div class="row slice-row"><span>Slice plane</span>
     <div class="seg" role="group" aria-label="Slice plane orientation">
       <button type="button" data-slice="off" class="on">Off</button>
@@ -50,6 +61,8 @@
   <p id="cardTa2" class="ta2"></p>
   <p class="ta2label" id="funcLabel" hidden>Function</p>
   <p id="cardFunc" class="func" hidden></p>
+  <p class="ta2label" id="decLabel" hidden>Decussation</p>
+  <p id="cardDec" class="func" hidden></p>
   <p id="cardSrc" class="src"></p>
   <button id="focusBtn" type="button">Focus camera</button>
 </section>

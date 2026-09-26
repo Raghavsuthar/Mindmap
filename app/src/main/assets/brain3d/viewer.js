@@ -156,6 +156,7 @@ const searchIndex = [];
 const catState = {};
 const labelMats = new Set();
 let matchSet = null;
+let hemi = 'both'; // 'both' | 'left' | 'right'; median structures always stay visible
 let labelsOn = false;
 let labelWorld = 0.01;
 let selected = null;
@@ -193,6 +194,9 @@ function showCard(anat) {
   $('cardFunc').textContent = func || '';
   $('cardFunc').hidden = !func;
   $('funcLabel').hidden = !func;
+  $('cardDec').textContent = anat.decussation || '';
+  $('cardDec').hidden = !anat.decussation;
+  $('decLabel').hidden = !anat.decussation;
   $('cardSrc').textContent = `Source: ${anat.source || 'Z-Anatomy / BodyParts3D'}`;
   $('card').hidden = false;
 }
@@ -263,11 +267,19 @@ function focusOn(mesh) {
 
 function updateVisibility() {
   for (const m of anatomyMeshes) {
-    const catOn = catState[m.userData.anat.cat] !== false;
-    m.visible = catOn && (!matchSet || matchSet.has(m));
+    const a = m.userData.anat;
+    const catOn = catState[a.cat] !== false;
+    const sideOn = hemi === 'both' || a.side === 'median' || a.side === hemi;
+    m.visible = catOn && sideOn && (!matchSet || matchSet.has(m));
     const sp = m.userData.sprite;
     if (sp) sp.visible = labelsOn && m.visible;
   }
+}
+
+function setCat(cat, on) {
+  catState[cat] = on;
+  const box = document.querySelector(`input[data-cat="${cat}"]`);
+  if (box) box.checked = on;
 }
 
 function allMats() {
@@ -445,6 +457,38 @@ function wireUI() {
     sliceT = sliceSlider.value / 100;
     applySlice();
   });
+
+  // ----- hemisphere: left / right / both (median always visible) -----
+  const hemiBtns = [...document.querySelectorAll('[data-hemi]')];
+  hemiBtns.forEach((b) => {
+    b.addEventListener('click', () => {
+      hemiBtns.forEach((x) => x.classList.toggle('on', x === b));
+      hemi = b.dataset.hemi;
+      updateVisibility();
+    });
+  });
+
+  // ----- presets -----
+  $('deepBtn').addEventListener('click', () => {
+    for (const cat of ['cortex', 'cerebellum', 'meninges_dura']) setCat(cat, false);
+    updateVisibility();
+  });
+  $('resetFiltersBtn').addEventListener('click', () => {
+    for (const cat of Object.keys(CATEGORY_STYLE)) setCat(cat, true);
+    hemi = 'both';
+    hemiBtns.forEach((x) => x.classList.toggle('on', x.dataset.hemi === 'both'));
+    const searchInput = $('search');
+    searchInput.value = '';
+    matchSet = null;
+    $('results').hidden = true;
+    $('results').innerHTML = '';
+    sliceMode = 'off';
+    document.querySelectorAll('.seg [data-slice]').forEach((x) =>
+      x.classList.toggle('on', x.dataset.slice === 'off'));
+    $('slicePos').disabled = true;
+    applySlice();
+    updateVisibility();
+  });
 }
 
 const manager = new THREE.LoadingManager();
@@ -515,6 +559,7 @@ async function init() {
       cat,
       region: extra.bx_region || (rec && rec.region) || '',
       parent: extra.bx_parent || (rec && rec.parent) || '',
+      decussation: extra.bx_decussation || (rec && rec.decussation) || '',
       ta2: (rec && rec.ta2) || [],
       source: extra.bx_source || (rec && rec.source) || '',
     };
