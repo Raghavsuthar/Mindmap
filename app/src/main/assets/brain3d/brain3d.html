@@ -31,16 +31,22 @@ function fail(msg){ errBox.style.display='flex'; errBox.textContent = msg; }
 
 const OrbitControls = THREE.OrbitControls;
 const container = document.getElementById('app');
-let renderer;
+let renderer, controls;
 try {
-  renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  const canvas = document.createElement('canvas');
+  const gl = canvas.getContext('webgl', { failIfMajorPerformanceCaveat: false }) || canvas.getContext('experimental-webgl');
+  if (gl) {
+    renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: 'low-power',
+      failIfMajorPerformanceCaveat: false
+    });
+  }
 } catch(e) {
-  fail("WebGL not supported on this device: " + e.message);
+  console.warn("WebGL context creation error:", e);
 }
-
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-container.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0B0F17);
@@ -50,12 +56,20 @@ const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHei
 const CAM_HOME = new THREE.Vector3(0.4, 0.9, 5.2);
 camera.position.copy(CAM_HOME);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.minDistance = 2.2;
-controls.maxDistance = 10;
-controls.enablePan = true;
+if (renderer) {
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 2.2;
+  controls.maxDistance = 10;
+  controls.enablePan = true;
+} else {
+  fail("3D WebGL acceleration is not supported on this virtual emulator GPU. Please tap '2D Map' above for the interactive Connectome canvas.");
+}
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.85));
 const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3,4,5); scene.add(key);
@@ -244,6 +258,7 @@ window.focusRegion = id => {
 // ---- Animation Loop ----
 const clock = new THREE.Clock();
 function animate(){
+  if (!renderer || !controls) return;
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
   for(const [id, ct] of Object.entries(circuitTubes)){
@@ -261,7 +276,7 @@ function animate(){
   controls.update();
   renderer.render(scene,camera);
 }
-animate();
+if (renderer) animate();
 
 window.addEventListener('resize', ()=>{
   camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();

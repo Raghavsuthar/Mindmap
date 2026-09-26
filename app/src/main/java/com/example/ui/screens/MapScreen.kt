@@ -55,7 +55,7 @@ fun MapScreen(
     var selectedLayerFilter by remember { mutableStateOf<EntityLayer?>(null) }
     var selectedCircuitId by remember { mutableStateOf<String?>(initialCircuitId ?: "cstc_loop") }
     var selectedRegion by remember { mutableStateOf<BrainRegion?>(null) }
-    var is3D by remember { mutableStateOf(true) }
+    var is3D by remember { mutableStateOf(false) }
     var xray by remember { mutableStateOf(false) }
 
     // Zoom & pan transformations
