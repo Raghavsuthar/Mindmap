@@ -521,7 +521,35 @@ object NeuroMapRepository {
             linkedDrugs = listOf("divalproex", "clonazepam"),
             summary = "Alcohol use disorder is a problematic pattern of drinking with tolerance, withdrawal, craving and loss of control, maintained by a shift from GABA-dopamine reward toward glutamate-driven dependence and stress sensitisation. Acamprosate, naltrexone and supervised disulfiram support abstinence alongside motivational and relapse-prevention therapies. Benzodiazepines manage withdrawal itself but are not maintenance treatment because of cross-dependence.",
             sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("Cochrane Library mental health collections", "https://www.cochranelibrary.com/collections"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
-        )
+        ),
+        Syndrome(
+            id = "social_anxiety",
+            name = "Social Anxiety Disorder",
+            icd11Code = "6B03",
+            dsm5Code = "300.23",
+            category = "Anxiety Disorders",
+            clinicalDefinition = "Marked fear of social scrutiny with avoidance of social or performance situations lasting at least six months, accompanied by panic-like somatic symptoms on exposure and functional impairment.",
+            primaryPathophysiologicalHallmark = "Hyperactive amygdala-insula threat response to social-evaluative cues with deficient prefrontal regulation, on shared serotonergic dysregulation with other anxiety disorders.",
+            linkedCircuits = listOf("frontolimbic_circuit", "salience_network"),
+            linkedTransmitters = listOf("serotonin", "norepinephrine"),
+            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine"),
+            summary = "Social anxiety disorder is a persistent fear of embarrassment or scrutiny in social and performance situations, maintained by avoidance that prevents corrective learning. SSRIs and SNRIs are first-line drugs and exposure-based CBT the leading psychotherapy, with feared situations ranked into a graded hierarchy. Early onset and comorbidity with depression make active treatment, not reassurance, the standard.",
+            sources = listOf(Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("CANMAT guidelines", "https://www.canmat.org/"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
+        ),
+        Syndrome(
+            id = "pdd",
+            name = "Persistent Depressive Disorder",
+            icd11Code = "6A72",
+            dsm5Code = "300.4",
+            category = "Mood Disorders",
+            clinicalDefinition = "Chronically depressed mood for at least two years with fewer concurrent symptoms than major depression, often punctuated by superimposed major depressive episodes (double depression).",
+            primaryPathophysiologicalHallmark = "The same monoamine and self-referential network dysregulation as major depression in milder chronic form, with strong familial loading in early-onset cases.",
+            linkedCircuits = listOf("default_mode_network", "frontolimbic_circuit"),
+            linkedTransmitters = listOf("serotonin", "norepinephrine"),
+            linkedDrugs = listOf("sertraline", "escitalopram", "venlafaxine"),
+            summary = "Persistent depressive disorder (dysthymia) is a chronic low-grade depression lasting years rather than weeks, frequently complicated by superimposed major episodes. Treatment mirrors major depression with SSRIs or SNRIs plus structured psychotherapy, and duration of maintenance is typically longer given the relapsing course. Chronicity itself, not severity, defines the diagnosis and the follow-up plan.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("NICE mental health guidance index", "https://www.nice.org.uk/guidance/conditions-and-diseases/mental-health-behavioural-and-neurodevelopmental-conditions"), Source("WHO ICD-11 browser", "https://icd.who.int/browse11/l-m/en"))
+        ),
     )
 
     val drugs: List<Drug> = listOf(
@@ -555,7 +583,7 @@ object NeuroMapRepository {
                 SideEffectMechanism("Initial Agitation", "Somatodendritic 5-HT2A/2C stimulation prior to autoreceptor downregulation", "Start low (25mg) in panic disorder and titrate slowly")
             ),
             blackBoxWarnings = listOf("Suicidality in children, adolescents, and young adults (<=24 years) during initial phase of treatment."),
-            linkedSyndromes = listOf("mdd", "ocd", "panic_disorder", "ptsd", "gad"),
+            linkedSyndromes = listOf("mdd", "ocd", "panic_disorder", "ptsd", "gad", "social_anxiety"),
             linkedCircuits = listOf("frontolimbic_circuit", "cstc_loop", "default_mode_network"),
             linkedTransmitters = listOf("serotonin", "dopamine"),
             clinicalPearls = "Sertraline's weak DAT inhibition makes it preferred for depression with psychomotor retardation and fatigue. It is the most extensively validated first-line SSRI in cardiac disease (SADHART trial).",
@@ -591,7 +619,7 @@ object NeuroMapRepository {
                 SideEffectMechanism("Sexual Dysfunction", "5-HT2A post-synaptic activation lowering spinal reflex sensitivity", "Switching or augmenting with Bupropion or PDE5 inhibitors")
             ),
             blackBoxWarnings = listOf("Increased risk of suicidal thoughts and behaviors in patients <=24 years."),
-            linkedSyndromes = listOf("mdd", "gad", "panic_disorder", "ocd"),
+            linkedSyndromes = listOf("mdd", "gad", "panic_disorder", "ocd", "social_anxiety"),
             linkedCircuits = listOf("frontolimbic_circuit", "cstc_loop", "default_mode_network"),
             linkedTransmitters = listOf("serotonin"),
             clinicalPearls = "The quintessential 'pure' SSRI with virtually no dopamine, norepinephrine, or anticholinergic off-target binding. Ideal first-line agent when polypharmacy and drug-drug interactions are primary concerns.",
@@ -627,7 +655,7 @@ object NeuroMapRepository {
                 SideEffectMechanism("Severe Discontinuation Syndrome", "Rapid clearance and precipitous drop in central 5-HT/NE tone", "Never stop abruptly; cross-taper with Fluoxetine for protracted withdrawal")
             ),
             blackBoxWarnings = listOf("Suicidality in children and young adults <=24 years."),
-            linkedSyndromes = listOf("mdd", "gad", "panic_disorder", "ptsd", "trd"),
+            linkedSyndromes = listOf("mdd", "gad", "panic_disorder", "ptsd", "trd", "social_anxiety"),
             linkedCircuits = listOf("default_mode_network", "frontolimbic_circuit", "salience_network"),
             linkedTransmitters = listOf("serotonin", "norepinephrine"),
             clinicalPearls = "At low doses (<=75 mg), venlafaxine is essentially an SSRI; true dual-mechanism noradrenergic recruitment occurs above 150 mg/day. Prominent risk of severe 'electric shock' withdrawal sensations if doses are skipped.",
@@ -1190,6 +1218,152 @@ object NeuroMapRepository {
             linkedTransmitters = listOf("serotonin", "norepinephrine"),
             clinicalPearls = "The most serotonergic tricyclic and a benchmark anti-obsessional; reserved for SSRI-resistant OCD and selected melancholic depressions because anticholinergic, cardiac and overdose toxicity demand respect.",
             summary = "Clomipramine is a tricyclic antidepressant and the most potent serotonin-reuptake blocker of its class, making it a reference treatment for obsessive-compulsive disorder after SSRI trials. Its broad receptor binding brings anticholinergic, sedative, hypotensive and pro-arrhythmic effects that require ECG and tolerability monitoring. A narrow therapeutic index and lethality in overdose mean quantities are limited in patients with suicidal ideation.",
+            sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
+        ),
+        Drug(
+            id = "fluoxetine",
+            genericName = "Fluoxetine",
+            brandName = "Prozac",
+            drugClass = "Selective Serotonin Reuptake Inhibitor (SSRI)",
+            atcCode = "N06AB03",
+            receptorTargets = listOf(
+                ReceptorTarget("SERT (5-HTT)", "Inhibitor", null, "High", "Sustained serotonin reuptake blockade; longest half-life of the class"),
+                ReceptorTarget("5-HT2C", "Antagonist", null, "Moderate", "Contributes to activating profile and relative weight neutrality")
+            ),
+            pharmacokinetics = Pharmacokinetics(
+                halfLife = "4-6 days (active norfluoxetine 7-15 days)",
+                bioavailability = "Well absorbed orally; long half-life dominates kinetics",
+                cypMetabolism = "Potent inhibitor of CYP2D6; substrate of CYP2D6 and CYP2C9",
+                timeToPeak = "6 to 8 hours"
+            ),
+            dosingRange = DosingRange(
+                startingDose = "20 mg/day",
+                targetDose = "20-40 mg/day",
+                maxDose = "80 mg/day",
+                titrationSchedule = "Start 20 mg daily; increase after several weeks if needed. Self-tapering on discontinuation due to the long half-life."
+            ),
+            commonSideEffects = listOf("Nausea", "Insomnia and activation", "Sexual dysfunction", "Tremor", "Hyponatremia in older adults"),
+            sideEffectMechanisms = listOf(
+                SideEffectMechanism("Gastrointestinal upset", "Enteric 5-HT3 stimulation", "Take with food; transient over 1-2 weeks"),
+                SideEffectMechanism("Sexual dysfunction", "5-HT2A-mediated spinal reflex inhibition", "Dose timing strategies or add bupropion"),
+                SideEffectMechanism("Drug interactions", "Potent CYP2D6 inhibition", "Review all co-medication; doubles levels of many 2D6 substrates")
+            ),
+            blackBoxWarnings = listOf("Suicidality in children, adolescents and young adults during early treatment."),
+            linkedSyndromes = listOf("mdd", "ocd", "panic_disorder"),
+            linkedCircuits = listOf("frontolimbic_circuit", "default_mode_network", "cstc_loop"),
+            linkedTransmitters = listOf("serotonin"),
+            clinicalPearls = "The original SSRI with a week-long half-life that forgives missed doses and self-tapers; potent CYP2D6 inhibition complicates polypharmacy.",
+            summary = "Fluoxetine was the first SSRI and remains a first-line antidepressant with additional indications in OCD, panic disorder and bulimia. Its exceptionally long half-life smooths missed doses and discontinuation but prolongs drug interactions and washout before MAOI switches. Potent CYP2D6 inhibition demands a full medication review in medically complex patients.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
+        ),
+        Drug(
+            id = "duloxetine",
+            genericName = "Duloxetine",
+            brandName = "Cymbalta",
+            drugClass = "Serotonin-Norepinephrine Reuptake Inhibitor (SNRI)",
+            atcCode = "N06AX21",
+            receptorTargets = listOf(
+                ReceptorTarget("SERT", "Inhibitor", null, "High", "Serotonin reuptake blockade across the dose range"),
+                ReceptorTarget("NET", "Inhibitor", null, "Moderate", "Balanced noradrenergic recruitment supporting pain pathways")
+            ),
+            pharmacokinetics = Pharmacokinetics(
+                halfLife = "About 12 hours",
+                bioavailability = "About 50% (enteric-coated, acid-labile)",
+                cypMetabolism = "CYP1A2 and CYP2D6 substrate; moderate CYP2D6 inhibitor",
+                timeToPeak = "About 6 hours"
+            ),
+            dosingRange = DosingRange(
+                startingDose = "30 mg/day",
+                targetDose = "60 mg/day",
+                maxDose = "120 mg/day",
+                titrationSchedule = "Start 30 mg daily for one week, then 60 mg daily. Taper slowly; discontinuation symptoms are prominent."
+            ),
+            commonSideEffects = listOf("Nausea (early, often transient)", "Dry mouth and constipation", "Dizziness", "Mild blood pressure rise", "Urinary hesitation", "Discontinuation syndrome"),
+            sideEffectMechanisms = listOf(
+                SideEffectMechanism("Early nausea", "Enteric 5-HT3 stimulation", "Start at 30 mg; take with food if needed"),
+                SideEffectMechanism("Blood pressure rise", "Noradrenergic vascular tone", "Monitor BP; use caution in uncontrolled hypertension"),
+                SideEffectMechanism("Discontinuation syndrome", "Short half-life with dual-mechanism withdrawal", "Taper over weeks, never stop abruptly")
+            ),
+            blackBoxWarnings = listOf("Suicidality in children, adolescents and young adults during early treatment."),
+            linkedSyndromes = listOf("mdd", "gad"),
+            linkedCircuits = listOf("frontolimbic_circuit", "default_mode_network", "salience_network"),
+            linkedTransmitters = listOf("serotonin", "norepinephrine"),
+            clinicalPearls = "Balanced SNRI and first-line option when depression coexists with chronic pain, diabetic neuropathy or fibromyalgia; nausea and discontinuation symptoms demand slow titration.",
+            summary = "Duloxetine is a balanced serotonin-norepinephrine reuptake inhibitor used in major depression, generalised anxiety and chronic pain syndromes including neuropathic pain and fibromyalgia. Its dual mechanism helps pain-depression comorbidity that pure SSRIs address poorly. Short half-life and dual withdrawal make slow tapering mandatory.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
+        ),
+        Drug(
+            id = "trazodone",
+            genericName = "Trazodone",
+            brandName = "Desyrel",
+            drugClass = "Serotonin Antagonist and Reuptake Inhibitor (SARI)",
+            atcCode = "N06AX05",
+            receptorTargets = listOf(
+                ReceptorTarget("5-HT2A", "Antagonist", null, "High", "Core antidepressant and sleep-promoting action"),
+                ReceptorTarget("SERT", "Inhibitor", null, "Moderate", "Weak reuptake blockade, relevant at higher divided doses"),
+                ReceptorTarget("H1 Histamine", "Antagonist", null, "Moderate", "Sedation exploited in low bedtime doses"),
+                ReceptorTarget("Alpha-1 Adrenergic", "Antagonist", null, "Moderate", "Orthostatic hypotension and priapism risk")
+            ),
+            pharmacokinetics = Pharmacokinetics(
+                halfLife = "About 7 hours (immediate-release)",
+                bioavailability = "Well absorbed orally",
+                cypMetabolism = "Major CYP3A4 substrate; levels rise sharply with potent 3A4 inhibitors",
+                timeToPeak = "1 to 2 hours fasting"
+            ),
+            dosingRange = DosingRange(
+                startingDose = "50-100 mg at bedtime",
+                targetDose = "150-300 mg/day in divided doses (depression)",
+                maxDose = "600 mg/day (inpatient depression)",
+                titrationSchedule = "Start low at bedtime for sleep; titrate toward divided antidepressant doses as tolerated."
+            ),
+            commonSideEffects = listOf("Sedation and morning grogginess", "Orthostatic hypotension", "Dry mouth", "Priapism (rare, emergency)", "QT prolongation"),
+            sideEffectMechanisms = listOf(
+                SideEffectMechanism("Sedation", "Combined H1 and 5-HT2A blockade", "Give the bulk at bedtime; warn about driving"),
+                SideEffectMechanism("Orthostatic hypotension", "Alpha-1 adrenergic blockade", "Slow posture changes; monitor elderly"),
+                SideEffectMechanism("Priapism", "Alpha-adrenergic blockade", "Counsel all male patients; prolonged erection needs emergency care")
+            ),
+            blackBoxWarnings = listOf("Suicidality in children, adolescents and young adults during early treatment."),
+            linkedSyndromes = listOf("mdd", "insomnia"),
+            linkedCircuits = listOf("default_mode_network", "frontolimbic_circuit"),
+            linkedTransmitters = listOf("serotonin"),
+            clinicalPearls = "Low bedtime doses exploit H1 and 5-HT2A blockade for insomnia without dependence; full antidepressant doses require divided regimens and priapism counselling.",
+            summary = "Trazodone is a multifunctional serotonergic agent used at low bedtime doses for insomnia and at higher divided doses for depression. Its receptor profile trades anticholinergic burden for sedation and orthostatic hypotension, with priapism as the signature rare emergency. CYP3A4 inhibitors substantially raise its levels.",
+            sources = listOf(Source("CANMAT 2023 MDD guideline (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
+        ),
+        Drug(
+            id = "haloperidol",
+            genericName = "Haloperidol",
+            brandName = "Haldol",
+            drugClass = "First-Generation Antipsychotic (Butyrophenone)",
+            atcCode = "N05AD01",
+            receptorTargets = listOf(
+                ReceptorTarget("D2", "Antagonist", null, "Very High", "Tight slow-dissociating blockade; antipsychotic effect with high EPS liability"),
+                ReceptorTarget("Alpha-1 Adrenergic", "Antagonist", null, "Low", "Modest hypotension risk, far less than low-potency phenothiazines")
+            ),
+            pharmacokinetics = Pharmacokinetics(
+                halfLife = "12-38 hours orally (decanoate depot lasts weeks)",
+                bioavailability = "About 60% orally; decanoate depot every 4 weeks",
+                cypMetabolism = "CYP2D6 and CYP3A4 substrate",
+                timeToPeak = "2 to 6 hours orally"
+            ),
+            dosingRange = DosingRange(
+                startingDose = "2-5 mg/day (0.5-2 mg in older adults)",
+                targetDose = "5-10 mg/day",
+                maxDose = "20 mg/day (higher only in refractory inpatient settings)",
+                titrationSchedule = "Start low; titrate to the lowest effective dose; switch to decanoate every 4 weeks for maintenance."
+            ),
+            commonSideEffects = listOf("Extrapyramidal symptoms (dystonia, parkinsonism, akathisia)", "Tardive dyskinesia with chronic use", "QT prolongation", "Hyperprolactinemia", "Neuroleptic malignant syndrome (rare)"),
+            sideEffectMechanisms = listOf(
+                SideEffectMechanism("Acute dystonia and parkinsonism", "Striatal D2 occupancy above 80 percent", "Lower dose, add anticholinergic acutely, switch class if recurrent"),
+                SideEffectMechanism("QT prolongation", "Cardiac potassium-channel blockade, worst with rapid IV use", "Baseline and serial ECGs; avoid IV boluses"),
+                SideEffectMechanism("Neuroleptic malignant syndrome", "Central D2 blockade with rigidity, fever and autonomic instability", "Stop drug immediately; dantrolene and intensive support")
+            ),
+            blackBoxWarnings = listOf("Increased mortality in elderly patients with dementia-related psychosis."),
+            linkedSyndromes = listOf("schizophrenia", "bipolar1"),
+            linkedCircuits = listOf("mesolimbic_pathway", "mesocortical_pathway", "cstc_loop"),
+            linkedTransmitters = listOf("dopamine"),
+            clinicalPearls = "The benchmark high-potency first-generation antipsychotic: unmatched for acute agitation and delirium, but EPS and QT liability relegate it behind second-generation agents for maintenance.",
+            summary = "Haloperidol is a high-potency dopamine-blocking antipsychotic that remains the reference for acute psychosis, mania and delirium, including intramuscular and long-acting decanoate forms. Its tight D2 binding brings dose-dependent extrapyramidal symptoms and tardive dyskinesia risk with chronic use. QT monitoring and the lowest effective dose govern safe prescribing.",
             sources = listOf(Source("IPS CPG 2025 update (PMC, free full text)", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12900045"), Source("DrugBank", "https://go.drugbank.com/"), Source("NCBI Bookshelf / StatPearls", "https://www.ncbi.nlm.nih.gov/books/"))
         ),
     )
