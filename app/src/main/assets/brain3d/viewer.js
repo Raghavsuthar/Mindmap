@@ -186,7 +186,7 @@ let hovered = null;
 let homePos = camera.position.clone();
 let homeTarget = new THREE.Vector3(0, 0, 0);
 const slicePlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
-const trimPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), -Infinity); // keeps y >= floor once set
+const trimPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), Infinity); // keeps y >= floor once set
 const noPlanes = [];
 const onePlane = [slicePlane];
 let sliceMode = 'off';
@@ -681,7 +681,9 @@ async function init() {
       hasTrimRef = true;
     }
   }
-  if (hasTrimRef) trimPlane.constant = trimRefBox.min.y;
+  // three.js keeps the POSITIVE side (normal.dot(p) + constant > 0), so to
+  // keep y >= floor with normal +Y the constant must be -floor.
+  if (hasTrimRef) trimPlane.constant = -trimRefBox.min.y;
 
   scene.add(model);
   const bbox = new THREE.Box3().setFromObject(model);
